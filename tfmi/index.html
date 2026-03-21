@@ -85,7 +85,14 @@
             socket = new WebSocket("wss://game.a7iv.com");
 
             socket.onopen = function(e) {
-                console.log("Connected to the server!");
+                console.log("Connected to the server! Sending auth token...");
+                
+                // The very first message we send is our Supabase ID card
+                const authPayload = { 
+                    action: "authenticate", 
+                    token: token 
+                };
+                socket.send(JSON.stringify(authPayload));
             };
 
             socket.onclose = function(e) {
