@@ -1,35 +1,101 @@
+---
+---
 <!DOCTYPE html>
 <html>
 <head>
     <title>Idle Factory Prototype</title>
     <style>
         body { font-family: sans-serif; padding: 20px; }
-        button { padding: 10px 20px; font-size: 16px; margin-right: 10px; cursor: pointer; }
+        button { padding: 10px 20px; font-size: 16px; margin-right: 10px; margin-bottom: 10px; cursor: pointer; }
+        #game-section { display: none; } /* Hidden by default until logged in */
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <h2>Idle Factory Client</h2>
-    <button onclick="sendAction('Mine Stone')">Mine Stone</button>
-    <button onclick="sendAction('Mine Coal')">Mine Coal</button>
+
+    <div id="auth-section">
+        <p>Please log in to play.</p>
+        <button onclick="loginWith('google')">Login with Google</button>
+        <button onclick="loginWith('twitch')">Login with Twitch</button>
+        <button onclick="loginWith('github')">Login with GitHub</button>
+    </div>
+
+    <div id="game-section">
+        <p>Logged in as: <span id="player-name"></span></p>
+        <button onclick="logout()">Logout</button>
+        <hr>
+        <button onclick="sendAction('Mine Stone')">Mine Stone</button>
+        <button onclick="sendAction('Mine Coal')">Mine Coal</button>
+    </div>
 
     <script>
-        // Connect to the local Python server you just built
-        const socket = new WebSocket("wss://game.a7iv.com");
+        // 1. Initialize Supabase using Jekyll config variables
+        const supabaseUrl = '{{ site.supabase_url }}';
+        const supabaseKey = '{{ site.supabase_anon_key }}';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        socket.onopen = function(e) {
-            console.log("Connected to the server!");
-        };
+        let socket; // We will define the socket connection later
 
-        // This function runs every time you click a button
+        // 2. Auth Functions
+        async function loginWith(provider) {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: provider,
+            });
+            if (error) console.error("Login error:", error.message);
+        }
+
+        async function logout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) console.error("Logout error:", error.message);
+        }
+
+        // 3. UI State Management
+        // This listens for any changes in auth state (login, logout, page refresh)
+        supabase.auth.onAuthStateChange((event, session) => {
+            const authSection = document.getElementById('auth-section');
+            const gameSection = document.getElementById('game-section');
+            const playerName = document.getElementById('player-name');
+
+            if (session) {
+                // User is logged in
+                authSection.style.display = 'none';
+                gameSection.style.display = 'block';
+                
+                // Get the user's name or email from the provider
+                playerName.textContent = session.user.user_metadata.name || session.user.email;
+
+                // Connect to the game server now that we are logged in
+                connectToServer(session.access_token);
+            } else {
+                // User is logged out
+                authSection.style.display = 'block';
+                gameSection.style.display = 'none';
+                
+                // Close connection if they log out
+                if (socket) socket.close();
+            }
+        });
+
+        // 4. WebSocket Game Logic
+        function connectToServer(token) {
+            // We connect to the server. (We will pass the token to the server soon!)
+            socket = new WebSocket("wss://game.a7iv.com");
+
+            socket.onopen = function(e) {
+                console.log("Connected to the server!");
+            };
+
+            socket.onclose = function(e) {
+                console.log("Disconnected from the server.");
+            };
+        }
+
         function sendAction(resource) {
-            if (socket.readyState === WebSocket.OPEN) {
-                
-                // Package the data up into a JSON format
+            if (socket && socket.readyState === WebSocket.OPEN) {
                 const payload = { action: resource };
-                
-                // Send it to the Python server
                 socket.send(JSON.stringify(payload));
-                
+                console.log("Sent:", payload);
             } else {
                 console.log("Server is not connected.");
             }

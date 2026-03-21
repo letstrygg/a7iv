@@ -4,3 +4,6 @@ baseurl: ""
 url: "https://a7iv.com"
 remote_theme: letstrygg/shared-jekyll-theme
 plugins: []
+
+supabase_url: "https://fnwmtytnltmqjaflfwyr.supabase.co"
+supabase_anon_key: "sb_publishable_y12qZF_dSbUPmV_aieiUgA_CibDsxQV"
