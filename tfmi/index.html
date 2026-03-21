@@ -30,29 +30,28 @@
     </div>
 
     <script>
-        // 1. Initialize Supabase using Jekyll config variables
+        // FIXED: Renamed to supabaseClient to avoid colliding with the library
         const supabaseUrl = '{{ site.supabase_url }}';
         const supabaseKey = '{{ site.supabase_anon_key }}';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let socket; // We will define the socket connection later
+        let socket; 
 
         // 2. Auth Functions
         async function loginWith(provider) {
-            const { error } = await supabase.auth.signInWithOAuth({
+            const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: provider,
             });
             if (error) console.error("Login error:", error.message);
         }
 
         async function logout() {
-            const { error } = await supabase.auth.signOut();
+            const { error } = await supabaseClient.auth.signOut();
             if (error) console.error("Logout error:", error.message);
         }
 
         // 3. UI State Management
-        // This listens for any changes in auth state (login, logout, page refresh)
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             const authSection = document.getElementById('auth-section');
             const gameSection = document.getElementById('game-section');
             const playerName = document.getElementById('player-name');
@@ -79,7 +78,6 @@
 
         // 4. WebSocket Game Logic
         function connectToServer(token) {
-            // We connect to the server. (We will pass the token to the server soon!)
             socket = new WebSocket("wss://game.a7iv.com");
 
             socket.onopen = function(e) {
