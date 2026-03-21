@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Idle Factory Prototype</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { padding: 10px 20px; font-size: 16px; margin-right: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Idle Factory Client</h2>
+    <button onclick="sendAction('Mine Stone')">Mine Stone</button>
+    <button onclick="sendAction('Mine Coal')">Mine Coal</button>
+
+    <script>
+        // Connect to the local Python server you just built
+        const socket = new WebSocket("wss://game.a7iv.com");
+
+        socket.onopen = function(e) {
+            console.log("Connected to the server!");
+        };
+
+        // This function runs every time you click a button
+        function sendAction(resource) {
+            if (socket.readyState === WebSocket.OPEN) {
+                
+                // Package the data up into a JSON format
+                const payload = { action: resource };
+                
+                // Send it to the Python server
+                socket.send(JSON.stringify(payload));
+                
+            } else {
+                console.log("Server is not connected.");
+            }
+        }
+    </script>
+</body>
+</html>
