@@ -38,12 +38,12 @@
         let socket; 
 
         // 2. Auth Functions
-        async function loginWith(provider) {
+		async function loginWith(provider) {
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    // Send them exactly back to where they clicked the button
-                    redirectTo: window.location.href 
+                    // Be highly specific to bypass GitHub Pages folder routing
+                    redirectTo: 'https://a7iv.com/tfmi/index.html' 
                 }
             });
             if (error) console.error("Login error:", error.message);
