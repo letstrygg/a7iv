@@ -42,8 +42,8 @@
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    // Force Supabase to redirect back to /tfmi/ (works for local and live)
-                    redirectTo: window.location.origin + window.location.pathname
+                    // Send them exactly back to where they clicked the button
+                    redirectTo: window.location.href 
                 }
             });
             if (error) console.error("Login error:", error.message);
