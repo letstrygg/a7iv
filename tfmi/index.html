@@ -7,9 +7,10 @@
     <style>
         body { font-family: sans-serif; padding: 20px; }
         button { padding: 10px 20px; font-size: 16px; margin-right: 10px; margin-bottom: 10px; cursor: pointer; }
-        #game-section { display: none; } /* Hidden by default until logged in */
+        #game-section { display: none; } 
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../auth.js"></script>
 </head>
 <body>
     <h2>Idle Factory Client</h2>
@@ -30,89 +31,43 @@
     </div>
 
     <script>
-        // FIXED: Renamed to supabaseClient to avoid colliding with the library
-        const supabaseUrl = '{{ site.supabase_url }}';
-        const supabaseKey = '{{ site.supabase_anon_key }}';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        // 1. Initialize your portable auth script
+        initAuth('{{ site.supabase_url }}', '{{ site.supabase_anon_key }}');
 
         let socket; 
 
-        // 2. Auth Functions
-		async function loginWith(provider) {
-            const { error } = await supabaseClient.auth.signInWithOAuth({
-                provider: provider,
-                options: {
-                    // Be highly specific to bypass GitHub Pages folder routing
-                    redirectTo: 'https://a7iv.com/tfmi/index.html' 
-                }
-            });
-            if (error) console.error("Login error:", error.message);
-        }
-
-        async function logout() {
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) console.error("Logout error:", error.message);
-        }
-
-        // 3. UI State Management
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            const authSection = document.getElementById('auth-section');
-            const gameSection = document.getElementById('game-section');
-            const playerName = document.getElementById('player-name');
-
-            if (session) {
-                // User is logged in
-                authSection.style.display = 'none';
-                gameSection.style.display = 'block';
-                
-                // Get the user's name or email from the provider
-                playerName.textContent = session.user.user_metadata.name || session.user.email;
-
-                // Connect to the game server now that we are logged in
+        // 2. Wire up your specific page's UI to the auth listener
+        listenForAuthChanges(
+            // WHAT TO DO ON LOGIN:
+            (session) => {
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('game-section').style.display = 'block';
+                document.getElementById('player-name').textContent = session.user.user_metadata.name || session.user.email;
                 connectToServer(session.access_token);
-            } else {
-                // User is logged out
-                authSection.style.display = 'block';
-                gameSection.style.display = 'none';
-                
-                // Close connection if they log out
+            },
+            // WHAT TO DO ON LOGOUT:
+            () => {
+                document.getElementById('auth-section').style.display = 'block';
+                document.getElementById('game-section').style.display = 'none';
                 if (socket) socket.close();
             }
-        });
+        );
 
-        // 4. WebSocket Game Logic
+        // 3. Game specific logic stays here
         function connectToServer(token) {
-            // Guard: Don't open a new connection if one is already opening/open
-            if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) {
-                return;
-            }
+            if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) return;
 
             socket = new WebSocket("wss://game.a7iv.com");
-
             socket.onopen = function(e) {
-                console.log("Connected to the server! Sending auth token...");
-                
-                const authPayload = { 
-                    action: "authenticate", 
-                    token: token 
-                };
-                // Use e.target to guarantee we send on this exact socket instance
-                e.target.send(JSON.stringify(authPayload));
+                console.log("Connected! Authenticating...");
+                e.target.send(JSON.stringify({ action: "authenticate", token: token }));
             };
-
-            socket.onclose = function(e) {
-                console.log("Disconnected from the server.");
-                socket = null; // Clear it out so we can reconnect if needed
-            };
+            socket.onclose = function() { socket = null; };
         }
 
         function sendAction(resource) {
             if (socket && socket.readyState === WebSocket.OPEN) {
-                const payload = { action: resource };
-                socket.send(JSON.stringify(payload));
-                console.log("Sent:", payload);
-            } else {
-                console.log("Server is not connected.");
+                socket.send(JSON.stringify({ action: resource }));
             }
         }
     </script>
