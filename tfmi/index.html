@@ -87,20 +87,33 @@
             Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="estimate"></span> |
             Sticks: <span id="sticks-count" class="stat">0</span><span id="sticks-plus" class="estimate"></span> |
             Flint: <span id="flint-count" class="stat">0</span><span id="flint-plus" class="estimate"></span> |
-            Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="estimate"></span>
+            Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="estimate"></span> |
+            Fiber: <span id="fiber-count" class="stat">0</span><span id="fiber-plus" class="estimate"></span> |
+            Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="estimate"></span> |
+            Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="estimate"></span> |
+            Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="estimate"></span> |
+            Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="estimate"></span>
         </p>
         <hr>
         <p id="task-status">Task: Idle</p>
         <button id="btn-sticks" onclick="sendAction('Gather Sticks')">Gather Sticks</button>
+        <button id="btn-fiber" onclick="sendAction('Gather Fiber')">Gather Fiber</button>
         <button id="btn-stone" onclick="sendAction('Gather Stone')">Gather Stone</button>
         <button id="btn-coal" onclick="sendAction('Mine Coal')">Mine Coal</button>
+        <button id="btn-head" onclick="sendAction('Craft Pickaxe Head')">Craft Pickaxe Head</button>
+        <button id="btn-craft-pick" onclick="sendAction('Craft Pickaxe')">Craft Pickaxe</button>
+        <button id="btn-iron-ore" onclick="sendAction('Mine Iron')">Mine Iron</button>
+        <button id="btn-iron" onclick="sendAction('Smelt Iron')">Smelt Iron</button>
     </div>
 
     <script>
         initAuth('{{ site.supabase_url }}', '{{ site.supabase_anon_key }}');
 
         let socket; 
-        let resources = { coal: 0, stone: 0, sticks: 0, flint: 0, gemstones: 0 };
+        let resources = { 
+            coal: 0, stone: 0, sticks: 0, flint: 0, gemstones: 0, 
+            fiber: 0, pickaxe_head: 0, iron_ore: 0, iron: 0, pickaxe: 0 
+        };
         let resourceConfigs = {};
         let currentTask = null;
         let progress = 0;
@@ -158,6 +171,11 @@
                     resources.sticks = data.sticks || 0;
                     resources.flint = data.flint || 0;
                     resources.gemstones = data.gemstones || 0;
+                    resources.fiber = data.fiber || 0;
+                    resources.pickaxe_head = data.pickaxe_head || 0;
+                    resources.iron_ore = data.iron_ore || 0;
+                    resources.iron = data.iron || 0;
+                    resources.pickaxe = data.pickaxe || 0;
                     updateDisplay();
                 } else if (data.action === "resource_update") {
                     syncResources(data.stats, data.gains);
@@ -170,9 +188,8 @@
         function syncResources(stats, gains) {
             // Show the "Cash Out" animations (+N)
             for (const [res, amount] of Object.entries(gains)) {
-                if (amount > 0) {
-                    triggerPopup(res + '-plus', '+' + amount, false);
-                }
+                if (amount > 0) triggerPopup(res + '-plus', '+' + amount, false);
+                else if (amount < 0) triggerPopup(res + '-plus', amount, true);
             }
 
             resources = stats;
@@ -188,6 +205,11 @@
             document.getElementById('sticks-count').textContent = Math.floor(resources.sticks);
             document.getElementById('flint-count').textContent = Math.floor(resources.flint);
             document.getElementById('gemstones-count').textContent = Math.floor(resources.gemstones);
+            document.getElementById('fiber-count').textContent = Math.floor(resources.fiber);
+            document.getElementById('pickaxe_head-count').textContent = Math.floor(resources.pickaxe_head);
+            document.getElementById('iron_ore-count').textContent = Math.floor(resources.iron_ore);
+            document.getElementById('iron-count').textContent = Math.floor(resources.iron);
+            document.getElementById('pickaxe-count').textContent = Math.floor(resources.pickaxe);
             
             const status = document.getElementById('task-status');
             status.textContent = currentTask ? `Task: ${currentTask} (+${sessionCount})` : 'Task: Idle';
@@ -196,15 +218,18 @@
             const coalBtn = document.getElementById('btn-coal');
             const stoneBtn = document.getElementById('btn-stone');
             const sticksBtn = document.getElementById('btn-sticks');
+            const btnMap = {
+                'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
+                'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-head', 'Craft Pickaxe': 'btn-craft-pick',
+                'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron'
+            };
             
-            coalBtn.classList.toggle('active-task', currentTask === 'Mine Coal');
-            stoneBtn.classList.toggle('active-task', currentTask === 'Gather Stone');
-            sticksBtn.classList.toggle('active-task', currentTask === 'Gather Sticks');
-            
-            // Reset progress bars for non-active buttons
-            if (currentTask !== 'Mine Coal') coalBtn.style.setProperty('--p', '0%');
-            if (currentTask !== 'Gather Stone') stoneBtn.style.setProperty('--p', '0%');
-            if (currentTask !== 'Gather Sticks') sticksBtn.style.setProperty('--p', '0%');
+            Object.entries(btnMap).forEach(([task, id]) => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.classList.toggle('active-task', currentTask === task);
+                if (currentTask !== task) btn.style.setProperty('--p', '0%');
+            });
         }
 
         function triggerPopup(id, text, isLoss) {
@@ -217,9 +242,14 @@
             el.classList.add('animate-plus');
         }
 
-        // Example: Define what each task consumes
         const consumptionConfigs = {
-            "Smelt Iron": { "coal": 1 } 
+            "Smelt Iron": { "coal": 1, "iron_ore": 1 },
+            "Craft Pickaxe Head": { "flint": 2 },
+            "Craft Pickaxe": { "pickaxe_head": 1, "sticks": 1, "fiber": 2 }
+        };
+
+        const requirementConfigs = {
+            "Mine Iron": { "pickaxe": 1 }
         };
 
         function gameLoop(now) {
@@ -234,6 +264,12 @@
                 const activeDuration = Math.max(0, duration - delay);
                 
                 progress += dt;
+
+                // Check Tool Requirements
+                const reqs = requirementConfigs[currentTask] || {};
+                for (const [res, min] of Object.entries(reqs)) {
+                    if (resources[res] < min) return requestAnimationFrame(gameLoop);
+                }
 
                 // Check if we have resources to continue
                 const inputs = consumptionConfigs[currentTask] || {};
@@ -258,10 +294,12 @@
                 
                 // Visual percentage: fill during activeDuration, hold at 100% during delay
                 const p = Math.min(100, (progress / activeDuration) * 100);
-                let activeId = '';
-                if (currentTask === 'Mine Coal') activeId = 'btn-coal';
-                else if (currentTask === 'Gather Stone') activeId = 'btn-stone';
-                else if (currentTask === 'Gather Sticks') activeId = 'btn-sticks';
+                const btnMap = {
+                    'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
+                    'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-head', 'Craft Pickaxe': 'btn-craft-pick',
+                    'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron'
+                };
+                let activeId = btnMap[currentTask] || '';
 
                 document.getElementById(activeId).style.setProperty('--p', p + '%');
                 updateDisplay();
