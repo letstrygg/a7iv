@@ -20,6 +20,8 @@ function listenForAuthChanges(onSignIn, onSignOut) {
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
         if (session) {
             onSignIn(session);
+        } else {
+            onSignOut();
         }
     });
 
