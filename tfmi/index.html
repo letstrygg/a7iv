@@ -7,16 +7,83 @@
             --bg: #121212;
             --text: #e0e0e0;
             --border: #333;
-            --accent: #4dabf7;
             --surface: #1e1e1e;
+            --hover-bg: #252525;
+            --hover-border: #555;
+            --red: #fa5252;
+            --green: #40c057;
+            --blue: #4dabf7;
+            --sidebar-width: 200px;
         }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; }
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
+            display: flex;
+            flex-direction: row;
+        }
+        #sidebar {
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            transition: width 0.3s ease, margin-left 0.3s ease;
+            width: calc(var(--sidebar-width) + 40px);
+            flex-shrink: 0;
+        }
+        #sidebar.collapsed {
+            width: 50px;
+            padding: 20px 0;
+        }
+        #sidebar-toggle {
+            writing-mode: horizontal-tb;
+            width: 100%;
+            text-align: center;
+            padding: 12px 8px;
+            font-size: 16px;
+            background: none;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        #sidebar-toggle:hover { background-color: var(--hover-bg); }
+        .sidebar-label {
+            writing-mode: horizontal-tb;
+            padding: 0 20px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        #sidebar.collapsed .sidebar-label { display: none; }
+        .sidebar-button {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 0 10px 6px !important;
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #sidebar.collapsed .sidebar-button {
+            width: calc(100% - 20px);
+            margin: 0 10px 6px !important;
+            padding: 8px 6px !important;
+            font-size: 10px;
+        }
+        #sidebar.collapsed .sidebar-button span { display: none; }
+        #main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 20px;
             max-width: 600px;
-            margin: 40px auto;
-            padding: 0 20px;
+            margin: 0 auto;
             line-height: 1.6;
         }
         h2 { font-weight: 300; margin-bottom: 30px; }
@@ -33,23 +100,23 @@
             margin: 0 8px 8px 0;
             position: relative;
         }
-        button:hover { background-color: #252525; border-color: #555; }
-        button.active-task { border-color: var(--accent); }
+        #sidebar-toggle, .sidebar-button {
+            margin: 0 !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #main-content button {
+            margin: 0 8px 8px 0;
+        }
+        button:hover { background-color: var(--hover-bg); border-color: var(--hover-border); }
+        button.active-task { border-color: var(--blue); }
         hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
         #auth-section, #game-section { display: none; }
-        .stat { color: var(--accent); font-weight: bold; }
-        .estimate.loss { color: #fa5252; }
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 12px;
-            padding: 6px 12px;
-            opacity: 0.6;
-        }
-        .logout-btn:hover { opacity: 1; }
+        .stat { color: var(--blue); font-weight: bold; }
+        .estimate.loss { color: var(--red); }
+        .dim { opacity: 0.6; };
         .estimate { 
-            color: #40c057; 
+            color: var(--green); 
             font-size: 0.9em; 
             margin-left: 4px; 
             font-weight: bold; 
@@ -67,50 +134,76 @@
     <script src="/js/auth.js"></script>
 </head>
 <body>
-    <h2>Idle Factory Client</h2>
-
-    <div id="auth-section">
-        <p>Please log in to play.</p>
-        <button onclick="loginWith('google')">Login with Google</button>
-        <button onclick="loginWith('twitch')">Login with Twitch</button>
-        <button onclick="loginWith('github')">Login with GitHub</button>
+    <div id="sidebar">
+        <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
+        <div class="sidebar-label">Tasks</div>
+        <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
+        <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
+        <button id="btn-stone" class="sidebar-button" title="Gather Stone" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
+        <button id="btn-coal" class="sidebar-button" title="Mine Coal" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
+        <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
+        <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
+        <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
+        <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
+        <button id="btn-chop" class="sidebar-button" title="Chop Wood" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
+        <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
+        <button id="btn-iron" class="sidebar-button" title="Smelt Iron" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
     </div>
 
-    <div id="game-section" style="position: relative;">
-        <button onclick="logout()" class="logout-btn">Logout</button>
-        <p>Logged in as: <span id="player-name"></span></p>
-        <hr>
-        <p>Resources — 
-            Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="estimate"></span> | 
-            Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="estimate"></span> |
-            Sticks: <span id="sticks-count" class="stat">0</span><span id="sticks-plus" class="estimate"></span> |
-            Flint: <span id="flint-count" class="stat">0</span><span id="flint-plus" class="estimate"></span> |
-            Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="estimate"></span> |
-            Fiber: <span id="fiber-count" class="stat">0</span><span id="fiber-plus" class="estimate"></span> |
-            Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="estimate"></span> |
-            Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="estimate"></span> |
-            Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="estimate"></span> |
-            Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="estimate"></span> |
-            Wood: <span id="wood-count" class="stat">0</span><span id="wood-plus" class="estimate"></span> |
-            Axe Head: <span id="axe_head-count" class="stat">0</span><span id="axe_head-plus" class="estimate"></span> |
-            Axe: <span id="axe-count" class="stat">0</span><span id="axe-plus" class="estimate"></span>
-        </p>
-        <hr>
-        <p id="task-status">Task: Idle</p>
-        <button id="btn-sticks" onclick="sendAction('Gather Sticks')">Gather Sticks</button>
-        <button id="btn-fiber" onclick="sendAction('Gather Fiber')">Gather Fiber</button>
-        <button id="btn-stone" onclick="sendAction('Gather Stone')">Gather Stone</button>
-        <button id="btn-coal" onclick="sendAction('Mine Coal')">Mine Coal</button>
-        <button id="btn-pick-head" onclick="sendAction('Craft Pickaxe Head')">Craft Pickaxe Head</button>
-        <button id="btn-craft-pick" onclick="sendAction('Craft Pickaxe')">Craft Pickaxe</button>
-        <button id="btn-axe-head" onclick="sendAction('Craft Axe Head')">Craft Axe Head</button>
-        <button id="btn-craft-axe" onclick="sendAction('Craft Axe')">Craft Axe</button>
-        <button id="btn-chop" onclick="sendAction('Chop Wood')">Chop Wood</button>
-        <button id="btn-iron-ore" onclick="sendAction('Mine Iron')">Mine Iron</button>
-        <button id="btn-iron" onclick="sendAction('Smelt Iron')">Smelt Iron</button>
+    <div id="main-content">
+        <h2>Idle Factory</h2>
+
+        <div id="auth-section">
+            <p>Log in to play.</p>
+            <button onclick="loginWith('google')">Login with Google</button>
+            <button onclick="loginWith('twitch')">Login with Twitch</button>
+            <button onclick="loginWith('github')">Login with GitHub</button>
+        </div>
+
+        <div id="game-section" style="position: relative;">
+            <button onclick="logout()" class="btn dim">Logout</button>
+            <p>Logged in as: <span id="player-name"></span></p>
+            <hr>
+            <p>Resources — 
+                Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="estimate"></span> | 
+                Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="estimate"></span> |
+                Sticks: <span id="sticks-count" class="stat">0</span><span id="sticks-plus" class="estimate"></span> |
+                Flint: <span id="flint-count" class="stat">0</span><span id="flint-plus" class="estimate"></span> |
+                Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="estimate"></span> |
+                Fiber: <span id="fiber-count" class="stat">0</span><span id="fiber-plus" class="estimate"></span> |
+                Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="estimate"></span> |
+                Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="estimate"></span> |
+                Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="estimate"></span> |
+                Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="estimate"></span> |
+                Wood: <span id="wood-count" class="stat">0</span><span id="wood-plus" class="estimate"></span> |
+                Axe Head: <span id="axe_head-count" class="stat">0</span><span id="axe_head-plus" class="estimate"></span> |
+                Axe: <span id="axe-count" class="stat">0</span><span id="axe-plus" class="estimate"></span>
+            </p>
+            <hr>
+            <p id="task-status">Task: Idle</p>
+        </div>
     </div>
 
     <script>
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            const toggle = document.getElementById('sidebar-toggle');
+            toggle.textContent = isCollapsed ? '▶' : '◀';
+        }
+
+        // Restore sidebar state on page load
+        (function() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+                document.getElementById('sidebar-toggle').textContent = '▶';
+            }
+        })();
+
         // Detect if we are running locally or on the production server
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
