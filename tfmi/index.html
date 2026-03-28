@@ -112,17 +112,20 @@
         button.active-task { border-color: var(--blue); }
         hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
         #auth-section, #game-section { display: none; }
-        .stat { color: var(--blue); font-weight: bold; }
-        .estimate.loss { color: var(--red); }
-        .dim { opacity: 0.6; };
-        .estimate { 
+        .stat { color: var(--blue); font-weight: bold; position: relative; }
+        .popup { 
             color: var(--green); 
             font-size: 0.9em; 
-            margin-left: 4px; 
             font-weight: bold; 
             opacity: 0; 
-            display: inline-block;
+            position: absolute;
+            left: 0;
+            top: -8px;
+            white-space: nowrap;
+            pointer-events: none;
         }
+        .popup.loss { color: var(--red); }
+        .dim { opacity: 0.6; };
         .animate-plus { animation: fadeUp 0.8s ease-out; }
         @keyframes fadeUp {
             0% { opacity: 1; transform: translateY(0); }
@@ -136,17 +139,20 @@
 <body>
     <div id="sidebar">
         <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
-        <div class="sidebar-label">Tasks</div>
+        <div class="sidebar-label">Gathering</div>
         <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
-        <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
         <button id="btn-stone" class="sidebar-button" title="Gather Stone" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
+        <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
         <button id="btn-coal" class="sidebar-button" title="Mine Coal" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
+        <div class="sidebar-label">Crafting</div>
         <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
-        <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
         <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
+        <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
         <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
-        <button id="btn-chop" class="sidebar-button" title="Chop Wood" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
+        <div class="sidebar-label">Mining</div>
         <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
+        <button id="btn-chop" class="sidebar-button" title="Chop Wood" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
+        <div class="sidebar-label">Processing</div>
         <button id="btn-iron" class="sidebar-button" title="Smelt Iron" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
     </div>
 
@@ -165,19 +171,19 @@
             <p>Logged in as: <span id="player-name"></span></p>
             <hr>
             <p>Resources — 
-                Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="estimate"></span> | 
-                Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="estimate"></span> |
-                Sticks: <span id="sticks-count" class="stat">0</span><span id="sticks-plus" class="estimate"></span> |
-                Flint: <span id="flint-count" class="stat">0</span><span id="flint-plus" class="estimate"></span> |
-                Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="estimate"></span> |
-                Fiber: <span id="fiber-count" class="stat">0</span><span id="fiber-plus" class="estimate"></span> |
-                Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="estimate"></span> |
-                Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="estimate"></span> |
-                Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="estimate"></span> |
-                Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="estimate"></span> |
-                Wood: <span id="wood-count" class="stat">0</span><span id="wood-plus" class="estimate"></span> |
-                Axe Head: <span id="axe_head-count" class="stat">0</span><span id="axe_head-plus" class="estimate"></span> |
-                Axe: <span id="axe-count" class="stat">0</span><span id="axe-plus" class="estimate"></span>
+                Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="popup"></span> | 
+                Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="popup"></span> |
+                Sticks: <span id="sticks-count" class="stat">0</span><span id="sticks-plus" class="popup"></span> |
+                Flint: <span id="flint-count" class="stat">0</span><span id="flint-plus" class="popup"></span> |
+                Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="popup"></span> |
+                Fiber: <span id="fiber-count" class="stat">0</span><span id="fiber-plus" class="popup"></span> |
+                Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="popup"></span> |
+                Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="popup"></span> |
+                Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="popup"></span> |
+                Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="popup"></span> |
+                Wood: <span id="wood-count" class="stat">0</span><span id="wood-plus" class="popup"></span> |
+                Axe Head: <span id="axe_head-count" class="stat">0</span><span id="axe_head-plus" class="popup"></span> |
+                Axe: <span id="axe-count" class="stat">0</span><span id="axe-plus" class="popup"></span>
             </p>
             <hr>
             <p id="task-status">Task: Idle</p>
@@ -330,12 +336,9 @@
             status.textContent = currentTask ? `Task: ${currentTask} (+${sessionCount})` : 'Task: Idle';
             
             // Handle button highlighting
-            const coalBtn = document.getElementById('btn-coal');
-            const stoneBtn = document.getElementById('btn-stone');
-            const sticksBtn = document.getElementById('btn-sticks');
             const btnMap = {
                 'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
-                'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-head', 'Craft Pickaxe': 'btn-craft-pick',
+                'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-pick-head', 'Craft Pickaxe': 'btn-craft-pick',
                 'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
                 'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
                 'Chop Wood': 'btn-chop'
@@ -416,14 +419,14 @@
                 const p = Math.min(100, (progress / activeDuration) * 100);
                 const btnMap = {
                     'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
-                    'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-head', 'Craft Pickaxe': 'btn-craft-pick',
+                    'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-pick-head', 'Craft Pickaxe': 'btn-craft-pick',
                     'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
                     'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
                     'Chop Wood': 'btn-chop'
                 };
                 let activeId = btnMap[currentTask] || '';
-
-                document.getElementById(activeId).style.setProperty('--p', p + '%');
+                const activeBtn = document.getElementById(activeId);
+                if (activeBtn) activeBtn.style.setProperty('--p', p + '%');
                 updateDisplay();
             }
             requestAnimationFrame(gameLoop);
