@@ -13,8 +13,7 @@
             --red: #fa5252;
             --green: #40c057;
             --blue: #4dabf7;
-            --sidebar-width: 240px;
-            --sidebar-collapsed-width: 60px;
+            --sidebar-width: 200px;
         }
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; height: 100%; }
@@ -23,32 +22,70 @@
             background-color: var(--bg);
             color: var(--text);
             display: flex;
+            flex-direction: row;
         }
-        
-        /* --- Sidebar Styles --- */
         #sidebar {
-            width: var(--sidebar-width);
+            background-color: var(--surface);
             border-right: 1px solid var(--border);
-            padding: 10px;
+            padding: 0 10px;
             overflow-y: auto;
-            transition: width 0.3s ease;
+            transition: width 0.3s ease, margin-left 0.3s ease;
+            width: calc(var(--sidebar-width) + 40px);
             flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
         }
         #sidebar.collapsed {
-            width: var(--sidebar-collapsed-width);
+            width: 50px;
         }
-
-        /* Shared layout for all sidebar items to ensure perfect vertical alignment */
-        .sidebar-label, .sidebar-button, #sidebar-toggle {
+        #sidebar-toggle {
+            writing-mode: horizontal-tb;
             width: 100%;
-            padding: 10px 12px;
-            margin: 0;
+            text-align: center;
+            padding: 12px 8px;
+            font-size: 16px;
+            background: none;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            margin-bottom: 12px;
         }
-
-        /* --- Content Area --- */
+        #sidebar-toggle:hover { background-color: var(--hover-bg); }
+        .sidebar-label {
+            writing-mode: horizontal-tb;
+            padding: 6px 0;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        #sidebar.collapsed .sidebar-label {
+            display: block;
+            height: 24px; /* Same height as the label would occupy */
+            padding: 0;
+            margin: 0;
+            visibility: hidden;
+        }
+        .sidebar-button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #sidebar.collapsed .sidebar-button {
+            padding: 8px 6px !important;
+            font-size: 10px;
+        }
+        #sidebar.collapsed .sidebar-button span { display: none; }
+        #sidebar.collapsed .sidebar-button::before {
+            content: attr(data-abbr);
+            font-size: 10px;
+            text-align: center;
+            display: block;
+        }
         #main-content {
             flex: 1;
             overflow-y: auto;
@@ -57,54 +94,23 @@
             margin: 0 auto;
             line-height: 1.6;
         }
-
-        /* --- Buttons & UI Elements --- */
         h2 { font-weight: 300; margin-bottom: 30px; }
-        
-        .sidebar-label {
-            font-size: 11px;
-            font-weight: 600;
-            opacity: 0.5;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid transparent; /* Matches button box-sizing */
-        }
-
-        .sidebar-button {
-            font-size: 13px;
-            text-align: left;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        #sidebar.collapsed .sidebar-label span,
-        #sidebar.collapsed .sidebar-button span { 
-            display: none; 
-        }
-
-        #sidebar.collapsed .sidebar-label::before {
-            content: attr(data-abbr);
-            font-size: 11px; /* Matches expanded font-size */
-            font-weight: bold;
-        }
-
-        #sidebar.collapsed .sidebar-button::before {
-            content: attr(data-abbr);
-            font-size: 13px; /* Matches expanded font-size */
-            font-weight: bold;
-        }
-
         button {
             background-color: var(--surface);
             background-image: linear-gradient(to right, rgba(77, 171, 247, 0.15) var(--p, 0%), transparent var(--p, 0%));
             color: inherit;
             border: 1px solid var(--border);
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
             transition: background 0.2s, border-color 0.2s;
+            margin: 0 8px 8px 0;
             position: relative;
+        }
+        #sidebar-toggle, .sidebar-button {
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         #main-content button {
             margin: 0 8px 8px 0;
@@ -140,20 +146,20 @@
 <body>
     <div id="sidebar">
         <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
-        <div class="sidebar-label" data-abbr="G"><span>Gathering</span></div>
+        <div class="sidebar-label">Gathering</div>
         <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" data-abbr="g.stc" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
         <button id="btn-stone" class="sidebar-button" title="Gather Stone" data-abbr="g.stn" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
         <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" data-abbr="g.fbr" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
         <button id="btn-coal" class="sidebar-button" title="Mine Coal" data-abbr="m.cl" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
-        <div class="sidebar-label" data-abbr="C"><span>Crafting</span></div>
+        <div class="sidebar-label">Crafting</div>
         <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" data-abbr="c.ph" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
         <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" data-abbr="c.ah" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
         <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" data-abbr="c.pck" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
         <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" data-abbr="c.axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
-        <div class="sidebar-label" data-abbr="M"><span>Mining</span></div>
+        <div class="sidebar-label">Mining</div>
         <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" data-abbr="m.irn" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
         <button id="btn-chop" class="sidebar-button" title="Chop Wood" data-abbr="c.wd" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
-        <div class="sidebar-label" data-abbr="P"><span>Processing</span></div>
+        <div class="sidebar-label">Processing</div>
         <button id="btn-iron" class="sidebar-button" title="Smelt Iron" data-abbr="s.irn" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
     </div>
 
