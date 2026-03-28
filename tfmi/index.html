@@ -24,6 +24,7 @@
         h2 { font-weight: 300; margin-bottom: 30px; }
         button {
             background-color: var(--surface);
+            background-image: linear-gradient(to right, rgba(77, 171, 247, 0.15) var(--p, 0%), transparent var(--p, 0%));
             color: inherit;
             border: 1px solid var(--border);
             padding: 10px 18px;
@@ -32,11 +33,14 @@
             font-size: 14px;
             transition: background 0.2s, border-color 0.2s;
             margin: 0 8px 8px 0;
+            position: relative;
         }
         button:hover { background-color: #252525; border-color: #555; }
+        button.active-task { border-color: var(--accent); }
         hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
         #game-section { display: none; }
         .stat { color: var(--accent); font-weight: bold; }
+        .estimate { color: #40c057; font-size: 0.9em; margin-left: 4px; font-weight: bold; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -56,16 +60,23 @@
         <p>Logged in as: <span id="player-name"></span></p>
         <button onclick="logout()">Logout</button>
         <hr>
-        <p>Resources — Coal: <span id="coal-count" class="stat">0</span> | Stone: <span id="stone-count" class="stat">0</span></p>
+        <p>Resources — 
+            Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="estimate"></span> | 
+            Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="estimate"></span>
+        </p>
         <hr>
-        <button onclick="sendAction('Mine Stone')">Mine Stone</button>
-        <button onclick="sendAction('Mine Coal')">Mine Coal</button>
+        <button id="btn-stone" onclick="sendAction('Mine Stone')">Mine Stone</button>
+        <button id="btn-coal" onclick="sendAction('Mine Coal')">Mine Coal</button>
     </div>
 
     <script>
         initAuth('{{ site.supabase_url }}', '{{ site.supabase_anon_key }}');
 
         let socket; 
+        let resources = { coal: 0, stone: 0 };
+        let currentTask = null;
+        let progress = 0;
+        let lastTime = 0;
 
         listenForAuthChanges(
             (session) => {
@@ -101,22 +112,70 @@
                 if (data.action === "auth_success") {
                     // Update the UI with the official database username
                     document.getElementById('player-name').textContent = data.username;
-                    updateResources(data.coal, data.stone);
+                    syncResources(data.coal, data.stone);
                 } else if (data.action === "resource_update") {
-                    updateResources(data.coal, data.stone);
+                    syncResources(data.coal, data.stone);
                 }
             };
 
             socket.onclose = function() { socket = null; };
         }
 
-        function updateResources(coal, stone) {
-            document.getElementById('coal-count').textContent = coal;
-            document.getElementById('stone-count').textContent = stone;
+        function syncResources(coal, stone) {
+            resources.coal = coal;
+            resources.stone = stone;
+            // Reset local progress because the server just "cashed out" the previous time
+            progress = 0; 
+            updateDisplay();
         }
+
+        function updateDisplay() {
+            document.getElementById('coal-count').textContent = Math.floor(resources.coal);
+            document.getElementById('stone-count').textContent = Math.floor(resources.stone);
+            
+            // Handle "+ 1" visibility
+            document.getElementById('coal-plus').textContent = currentTask === 'Mine Coal' ? ' + 1' : '';
+            document.getElementById('stone-plus').textContent = currentTask === 'Mine Stone' ? ' + 1' : '';
+
+            // Handle button highlighting
+            const coalBtn = document.getElementById('btn-coal');
+            const stoneBtn = document.getElementById('btn-stone');
+            
+            coalBtn.classList.toggle('active-task', currentTask === 'Mine Coal');
+            stoneBtn.classList.toggle('active-task', currentTask === 'Mine Stone');
+            
+            // Reset progress bars for non-active buttons
+            if (currentTask !== 'Mine Coal') coalBtn.style.setProperty('--p', '0%');
+            if (currentTask !== 'Mine Stone') stoneBtn.style.setProperty('--p', '0%');
+        }
+
+        function gameLoop(now) {
+            if (!lastTime) lastTime = now;
+            const dt = now - lastTime;
+            lastTime = now;
+
+            if (currentTask) {
+                const duration = currentTask === 'Mine Coal' ? 4000 : 6000;
+                progress += dt;
+
+                if (progress >= duration) {
+                    progress -= duration;
+                    if (currentTask === 'Mine Coal') resources.coal++;
+                    else resources.stone++;
+                }
+                
+                const p = (progress / duration) * 100;
+                const activeId = currentTask === 'Mine Coal' ? 'btn-coal' : 'btn-stone';
+                document.getElementById(activeId).style.setProperty('--p', p + '%');
+                updateDisplay();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+        requestAnimationFrame(gameLoop);
 
         function sendAction(resource) {
             if (socket && socket.readyState === WebSocket.OPEN) {
+                currentTask = resource;
                 socket.send(JSON.stringify({ action: resource }));
             }
         }
