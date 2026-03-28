@@ -5,9 +5,38 @@
 <head>
     <title>Idle Factory Prototype</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        button { padding: 10px 20px; font-size: 16px; margin-right: 10px; margin-bottom: 10px; cursor: pointer; }
-        #game-section { display: none; } 
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --border: #333;
+            --accent: #4dabf7;
+            --surface: #1e1e1e;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+        h2 { font-weight: 300; margin-bottom: 30px; }
+        button {
+            background-color: var(--surface);
+            color: inherit;
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s, border-color 0.2s;
+            margin: 0 8px 8px 0;
+        }
+        button:hover { background-color: #252525; border-color: #555; }
+        hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
+        #game-section { display: none; }
+        .stat { color: var(--accent); font-weight: bold; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -27,7 +56,7 @@
         <p>Logged in as: <span id="player-name"></span></p>
         <button onclick="logout()">Logout</button>
         <hr>
-        <p>Resources — Coal: <span id="coal-count">0</span> | Stone: <span id="stone-count">0</span></p>
+        <p>Resources — Coal: <span id="coal-count" class="stat">0</span> | Stone: <span id="stone-count" class="stat">0</span></p>
         <hr>
         <button onclick="sendAction('Mine Stone')">Mine Stone</button>
         <button onclick="sendAction('Mine Coal')">Mine Coal</button>
