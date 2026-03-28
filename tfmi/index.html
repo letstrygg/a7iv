@@ -40,6 +40,7 @@
         hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
         #auth-section, #game-section { display: none; }
         .stat { color: var(--accent); font-weight: bold; }
+        .estimate.loss { color: #fa5252; }
         .logout-btn {
             position: absolute;
             top: 20px;
@@ -159,19 +160,22 @@
                     resources.gemstones = data.gemstones || 0;
                     updateDisplay();
                 } else if (data.action === "resource_update") {
-                    syncResources(data);
+                    syncResources(data.stats, data.gains);
                 }
             };
 
             socket.onclose = function() { socket = null; };
         }
 
-        function syncResources(data) {
-            resources.coal = data.coal;
-            resources.stone = data.stone;
-            resources.sticks = data.sticks;
-            resources.flint = data.flint;
-            resources.gemstones = data.gemstones;
+        function syncResources(stats, gains) {
+            // Show the "Cash Out" animations (+N)
+            for (const [res, amount] of Object.entries(gains)) {
+                if (amount > 0) {
+                    triggerPopup(res + '-plus', '+' + amount, false);
+                }
+            }
+
+            resources = stats;
             // Reset local progress because the server just "cashed out" the previous time
             progress = 0; 
             sessionCount = 0;
@@ -203,13 +207,20 @@
             if (currentTask !== 'Gather Sticks') sticksBtn.style.setProperty('--p', '0%');
         }
 
-        function triggerPlusOne(id) {
+        function triggerPopup(id, text, isLoss) {
             const el = document.getElementById(id);
-            el.textContent = ' + 1';
+            if (!el) return;
+            el.textContent = ' ' + text;
+            el.classList.toggle('loss', isLoss);
             el.classList.remove('animate-plus');
             void el.offsetWidth; // Trigger reflow to restart animation
             el.classList.add('animate-plus');
         }
+
+        // Example: Define what each task consumes
+        const consumptionConfigs = {
+            "Smelt Iron": { "coal": 1 } 
+        };
 
         function gameLoop(now) {
             if (!lastTime) lastTime = now;
@@ -224,10 +235,25 @@
                 
                 progress += dt;
 
+                // Check if we have resources to continue
+                const inputs = consumptionConfigs[currentTask] || {};
+                for (const [res, req] of Object.entries(inputs)) {
+                    if (resources[res] < req) {
+                        // Local stop if out of resources
+                        console.log("Out of " + res);
+                        return requestAnimationFrame(gameLoop); 
+                    }
+                }
+
                 if (progress >= duration) {
                     progress -= duration;
                     sessionCount++;
-                    triggerPlusOne(currentTask.toLowerCase().split(' ')[1] + '-plus');
+
+                    // Show red -1 for consumed resources immediately
+                    for (const [res, req] of Object.entries(inputs)) {
+                        resources[res] -= req; // Local consumption
+                        triggerPopup(res + '-plus', '-' + req, true);
+                    }
                 }
                 
                 // Visual percentage: fill during activeDuration, hold at 100% during delay
