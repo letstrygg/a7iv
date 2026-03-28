@@ -40,7 +40,19 @@
         hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
         #game-section { display: none; }
         .stat { color: var(--accent); font-weight: bold; }
-        .estimate { color: #40c057; font-size: 0.9em; margin-left: 4px; font-weight: bold; }
+        .estimate { 
+            color: #40c057; 
+            font-size: 0.9em; 
+            margin-left: 4px; 
+            font-weight: bold; 
+            opacity: 0; 
+            display: inline-block;
+        }
+        .animate-plus { animation: fadeUp 0.8s ease-out; }
+        @keyframes fadeUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -148,10 +160,6 @@
             document.getElementById('coal-count').textContent = Math.floor(resources.coal);
             document.getElementById('stone-count').textContent = Math.floor(resources.stone);
             
-            // Handle "+ 1" visibility
-            document.getElementById('coal-plus').textContent = currentTask === 'Mine Coal' ? ' + 1' : '';
-            document.getElementById('stone-plus').textContent = currentTask === 'Mine Stone' ? ' + 1' : '';
-
             // Handle button highlighting
             const coalBtn = document.getElementById('btn-coal');
             const stoneBtn = document.getElementById('btn-stone');
@@ -162,6 +170,14 @@
             // Reset progress bars for non-active buttons
             if (currentTask !== 'Mine Coal') coalBtn.style.setProperty('--p', '0%');
             if (currentTask !== 'Mine Stone') stoneBtn.style.setProperty('--p', '0%');
+        }
+
+        function triggerPlusOne(id) {
+            const el = document.getElementById(id);
+            el.textContent = ' + 1';
+            el.classList.remove('animate-plus');
+            void el.offsetWidth; // Trigger reflow to restart animation
+            el.classList.add('animate-plus');
         }
 
         function gameLoop(now) {
@@ -176,8 +192,13 @@
 
                 if (progress >= duration) {
                     progress -= duration;
-                    if (currentTask === 'Mine Coal') resources.coal++;
-                    else resources.stone++;
+                    if (currentTask === 'Mine Coal') {
+                        resources.coal++;
+                        triggerPlusOne('coal-plus');
+                    } else {
+                        resources.stone++;
+                        triggerPlusOne('stone-plus');
+                    }
                 }
                 
                 const p = (progress / duration) * 100;
