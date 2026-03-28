@@ -32,21 +32,21 @@
     </div>
 
     <script>
-        // 1. Initialize your portable auth script
         initAuth('{{ site.supabase_url }}', '{{ site.supabase_anon_key }}');
 
         let socket; 
 
-        // 2. Wire up your specific page's UI to the auth listener
         listenForAuthChanges(
-            // WHAT TO DO ON LOGIN:
             (session) => {
                 document.getElementById('auth-section').style.display = 'none';
                 document.getElementById('game-section').style.display = 'block';
-                document.getElementById('player-name').textContent = session.user.user_metadata.name || session.user.email;
+                
+                // 1. STOP GRABBING THE GOOGLE NAME HERE. 
+                // Show a loading state instead while we wait for Python.
+                document.getElementById('player-name').textContent = "Connecting to server...";
+                
                 connectToServer(session.access_token);
             },
-            // WHAT TO DO ON LOGOUT:
             () => {
                 document.getElementById('auth-section').style.display = 'block';
                 document.getElementById('game-section').style.display = 'none';
@@ -54,15 +54,25 @@
             }
         );
 
-        // 3. Game specific logic stays here
         function connectToServer(token) {
             if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) return;
 
             socket = new WebSocket("wss://game.a7iv.com");
+            
             socket.onopen = function(e) {
-                console.log("Connected! Authenticating...");
                 e.target.send(JSON.stringify({ action: "authenticate", token: token }));
             };
+            
+            // 2. LISTEN FOR THE SERVER TO TELL US WHO WE ARE
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.action === "auth_success") {
+                    // Update the UI with the official database username
+                    document.getElementById('player-name').textContent = data.username;
+                }
+            };
+
             socket.onclose = function() { socket = null; };
         }
 
