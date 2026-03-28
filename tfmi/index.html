@@ -27,7 +27,6 @@
         #sidebar {
             background-color: var(--surface);
             border-right: 1px solid var(--border);
-            padding: 20px 0;
             overflow-y: auto;
             transition: width 0.3s ease, margin-left 0.3s ease;
             width: calc(var(--sidebar-width) + 40px);
@@ -35,7 +34,6 @@
         }
         #sidebar.collapsed {
             width: 50px;
-            padding: 20px 0;
         }
         #sidebar-toggle {
             writing-mode: horizontal-tb;
@@ -52,18 +50,24 @@
         #sidebar-toggle:hover { background-color: var(--hover-bg); }
         .sidebar-label {
             writing-mode: horizontal-tb;
-            padding: 0 20px 12px;
+            padding: 6px 20px;
             font-size: 12px;
             font-weight: 600;
             opacity: 0.6;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        #sidebar.collapsed .sidebar-label { display: none; }
+        #sidebar.collapsed .sidebar-label {
+            display: block;
+            height: 24px; /* Same height as the label would occupy */
+            padding: 0;
+            margin: 0;
+            visibility: hidden;
+        }
         .sidebar-button {
             display: block;
             width: calc(100% - 20px);
-            margin: 0 10px 6px !important;
+            margin: 0 6px !important;
             padding: 8px 12px !important;
             font-size: 12px !important;
             text-align: left;
@@ -73,11 +77,17 @@
         }
         #sidebar.collapsed .sidebar-button {
             width: calc(100% - 20px);
-            margin: 0 10px 6px !important;
+            margin: 0 6px !important;
             padding: 8px 6px !important;
             font-size: 10px;
         }
         #sidebar.collapsed .sidebar-button span { display: none; }
+        #sidebar.collapsed .sidebar-button::before {
+            content: attr(data-abbr);
+            font-size: 10px;
+            text-align: center;
+            display: block;
+        }
         #main-content {
             flex: 1;
             overflow-y: auto;
@@ -101,7 +111,6 @@
             position: relative;
         }
         #sidebar-toggle, .sidebar-button {
-            margin: 0 !important;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -140,20 +149,20 @@
     <div id="sidebar">
         <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
         <div class="sidebar-label">Gathering</div>
-        <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
-        <button id="btn-stone" class="sidebar-button" title="Gather Stone" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
-        <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
-        <button id="btn-coal" class="sidebar-button" title="Mine Coal" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
+        <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" data-abbr="g.stc" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
+        <button id="btn-stone" class="sidebar-button" title="Gather Stone" data-abbr="g.stn" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
+        <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" data-abbr="g.fbr" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
+        <button id="btn-coal" class="sidebar-button" title="Mine Coal" data-abbr="m.cl" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
         <div class="sidebar-label">Crafting</div>
-        <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
-        <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
-        <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
-        <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
+        <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" data-abbr="c.ph" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
+        <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" data-abbr="c.ah" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
+        <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" data-abbr="c.pck" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
+        <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" data-abbr="c.axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
         <div class="sidebar-label">Mining</div>
-        <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
-        <button id="btn-chop" class="sidebar-button" title="Chop Wood" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
+        <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" data-abbr="m.irn" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
+        <button id="btn-chop" class="sidebar-button" title="Chop Wood" data-abbr="c.wd" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
         <div class="sidebar-label">Processing</div>
-        <button id="btn-iron" class="sidebar-button" title="Smelt Iron" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
+        <button id="btn-iron" class="sidebar-button" title="Smelt Iron" data-abbr="s.irn" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
     </div>
 
     <div id="main-content">
