@@ -65,6 +65,7 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/tfmi/js/local_env.js"></script>
     
     <script src="/js/auth.js"></script>
 </head>
@@ -92,7 +93,10 @@
             Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="estimate"></span> |
             Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="estimate"></span> |
             Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="estimate"></span> |
-            Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="estimate"></span>
+            Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="estimate"></span> |
+            Wood: <span id="wood-count" class="stat">0</span><span id="wood-plus" class="estimate"></span> |
+            Axe Head: <span id="axe_head-count" class="stat">0</span><span id="axe_head-plus" class="estimate"></span> |
+            Axe: <span id="axe-count" class="stat">0</span><span id="axe-plus" class="estimate"></span>
         </p>
         <hr>
         <p id="task-status">Task: Idle</p>
@@ -100,19 +104,33 @@
         <button id="btn-fiber" onclick="sendAction('Gather Fiber')">Gather Fiber</button>
         <button id="btn-stone" onclick="sendAction('Gather Stone')">Gather Stone</button>
         <button id="btn-coal" onclick="sendAction('Mine Coal')">Mine Coal</button>
-        <button id="btn-head" onclick="sendAction('Craft Pickaxe Head')">Craft Pickaxe Head</button>
+        <button id="btn-pick-head" onclick="sendAction('Craft Pickaxe Head')">Craft Pickaxe Head</button>
         <button id="btn-craft-pick" onclick="sendAction('Craft Pickaxe')">Craft Pickaxe</button>
+        <button id="btn-axe-head" onclick="sendAction('Craft Axe Head')">Craft Axe Head</button>
+        <button id="btn-craft-axe" onclick="sendAction('Craft Axe')">Craft Axe</button>
+        <button id="btn-chop" onclick="sendAction('Chop Wood')">Chop Wood</button>
         <button id="btn-iron-ore" onclick="sendAction('Mine Iron')">Mine Iron</button>
         <button id="btn-iron" onclick="sendAction('Smelt Iron')">Smelt Iron</button>
     </div>
 
     <script>
-        initAuth('{{ site.supabase_url }}', '{{ site.supabase_anon_key }}');
+        // Detect if we are running locally or on the production server
+        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+        // Fallback for Supabase keys if Jekyll isn't processing the file locally
+        const localEnv = window.LOCAL_ENV || {};
+        const spUrl = '{{ site.supabase_url }}'.startsWith('{{') ? localEnv.SUPABASE_URL : '{{ site.supabase_url }}';
+        const spKey = '{{ site.supabase_anon_key }}'.startsWith('{{') ? localEnv.SUPABASE_ANON_KEY : '{{ site.supabase_anon_key }}';
+
+        if (spUrl && spKey) {
+            initAuth(spUrl, spKey);
+        }
 
         let socket; 
         let resources = { 
             coal: 0, stone: 0, sticks: 0, flint: 0, gemstones: 0, 
-            fiber: 0, pickaxe_head: 0, iron_ore: 0, iron: 0, pickaxe: 0 
+            fiber: 0, pickaxe_head: 0, iron_ore: 0, iron: 0, pickaxe: 0,
+            wood: 0, axe_head: 0, axe: 0
         };
         let resourceConfigs = {};
         let currentTask = null;
@@ -141,7 +159,8 @@
         function connectToServer(token) {
             if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) return;
 
-            socket = new WebSocket("wss://game.a7iv.com");
+            const wsUrl = isLocal ? "ws://localhost:8765" : "wss://game.a7iv.com";
+            socket = new WebSocket(wsUrl);
             
             socket.onopen = function(e) {
                 e.target.send(JSON.stringify({ action: "authenticate", token: token }));
@@ -176,6 +195,9 @@
                     resources.iron_ore = data.iron_ore || 0;
                     resources.iron = data.iron || 0;
                     resources.pickaxe = data.pickaxe || 0;
+                    resources.wood = data.wood || 0;
+                    resources.axe_head = data.axe_head || 0;
+                    resources.axe = data.axe || 0;
                     updateDisplay();
                 } else if (data.action === "resource_update") {
                     syncResources(data.stats, data.gains);
@@ -210,6 +232,9 @@
             document.getElementById('iron_ore-count').textContent = Math.floor(resources.iron_ore);
             document.getElementById('iron-count').textContent = Math.floor(resources.iron);
             document.getElementById('pickaxe-count').textContent = Math.floor(resources.pickaxe);
+            document.getElementById('wood-count').textContent = Math.floor(resources.wood);
+            document.getElementById('axe_head-count').textContent = Math.floor(resources.axe_head);
+            document.getElementById('axe-count').textContent = Math.floor(resources.axe);
             
             const status = document.getElementById('task-status');
             status.textContent = currentTask ? `Task: ${currentTask} (+${sessionCount})` : 'Task: Idle';
@@ -221,7 +246,9 @@
             const btnMap = {
                 'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
                 'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-head', 'Craft Pickaxe': 'btn-craft-pick',
-                'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron'
+                'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
+                'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
+                'Chop Wood': 'btn-chop'
             };
             
             Object.entries(btnMap).forEach(([task, id]) => {
@@ -244,12 +271,15 @@
 
         const consumptionConfigs = {
             "Smelt Iron": { "coal": 1, "iron_ore": 1 },
-            "Craft Pickaxe Head": { "flint": 2 },
-            "Craft Pickaxe": { "pickaxe_head": 1, "sticks": 1, "fiber": 2 }
+            "Craft Pickaxe Head": { "stone": 10 },
+            "Craft Pickaxe": { "pickaxe_head": 1, "sticks": 1, "fiber": 2 },
+            "Craft Axe Head": { "flint": 2 },
+            "Craft Axe": { "axe_head": 1, "sticks": 1, "fiber": 2 }
         };
 
         const requirementConfigs = {
-            "Mine Iron": { "pickaxe": 1 }
+            "Mine Iron": { "pickaxe": 1 },
+            "Chop Wood": { "axe": 1 }
         };
 
         function gameLoop(now) {
@@ -297,7 +327,9 @@
                 const btnMap = {
                     'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
                     'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-head', 'Craft Pickaxe': 'btn-craft-pick',
-                    'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron'
+                    'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
+                    'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
+                    'Chop Wood': 'btn-chop'
                 };
                 let activeId = btnMap[currentTask] || '';
 
