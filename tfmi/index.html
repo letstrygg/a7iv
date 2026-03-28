@@ -74,6 +74,7 @@
 
         let socket; 
         let resources = { coal: 0, stone: 0 };
+        let resourceConfigs = {};
         let currentTask = null;
         let progress = 0;
         let lastTime = 0;
@@ -112,6 +113,7 @@
                 if (data.action === "auth_success") {
                     // Update the UI with the official database username
                     document.getElementById('player-name').textContent = data.username;
+                    resourceConfigs = data.resource_configs;
                     syncResources(data.coal, data.stone);
                 } else if (data.action === "resource_update") {
                     syncResources(data.coal, data.stone);
@@ -155,7 +157,8 @@
             lastTime = now;
 
             if (currentTask) {
-                const duration = currentTask === 'Mine Coal' ? 4000 : 6000;
+                const seconds = resourceConfigs[currentTask] || 1;
+                const duration = seconds * 1000;
                 progress += dt;
 
                 if (progress >= duration) {
