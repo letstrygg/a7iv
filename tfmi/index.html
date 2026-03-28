@@ -38,8 +38,17 @@
         button:hover { background-color: #252525; border-color: #555; }
         button.active-task { border-color: var(--accent); }
         hr { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
-        #game-section { display: none; }
+        #auth-section, #game-section { display: none; }
         .stat { color: var(--accent); font-weight: bold; }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 12px;
+            padding: 6px 12px;
+            opacity: 0.6;
+        }
+        .logout-btn:hover { opacity: 1; }
         .estimate { 
             color: #40c057; 
             font-size: 0.9em; 
@@ -68,9 +77,9 @@
         <button onclick="loginWith('github')">Login with GitHub</button>
     </div>
 
-    <div id="game-section">
+    <div id="game-section" style="position: relative;">
+        <button onclick="logout()" class="logout-btn">Logout</button>
         <p>Logged in as: <span id="player-name"></span></p>
-        <button onclick="logout()">Logout</button>
         <hr>
         <p>Resources — 
             Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="estimate"></span> | 
@@ -212,8 +221,10 @@
 
         function sendAction(resource) {
             if (socket && socket.readyState === WebSocket.OPEN) {
-                currentTask = resource;
-                socket.send(JSON.stringify({ action: resource }));
+                const nextTask = (currentTask === resource) ? null : resource;
+                currentTask = nextTask;
+                socket.send(JSON.stringify({ action: nextTask || "Idle" }));
+                updateDisplay();
             }
         }
     </script>
