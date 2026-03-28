@@ -114,7 +114,20 @@
                     // Update the UI with the official database username
                     document.getElementById('player-name').textContent = data.username;
                     resourceConfigs = data.resource_configs;
-                    syncResources(data.coal, data.stone);
+
+                    // Resume task and calculate progress based on server timestamp
+                    currentTask = data.current_task;
+                    if (currentTask && data.task_start) {
+                        // SQLite uses UTC; adding 'Z' ensures JS treats it as UTC
+                        const startTime = new Date(data.task_start + "Z").getTime();
+                        const elapsed = Date.now() - startTime;
+                        const duration = (resourceConfigs[currentTask] || 1) * 1000;
+                        progress = elapsed % duration;
+                    }
+
+                    resources.coal = data.coal;
+                    resources.stone = data.stone;
+                    updateDisplay();
                 } else if (data.action === "resource_update") {
                     syncResources(data.coal, data.stone);
                 }
