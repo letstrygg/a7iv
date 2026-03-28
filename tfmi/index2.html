@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Idle Factory Prototype</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/local_env.js"></script>
     <script src="js/auth.js"></script>
@@ -22,20 +22,20 @@
         <div id="sidebar">
             <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
             <div class="sidebar-label" data-abbr="G"><span>Gathering</span></div>
-            <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" data-abbr="g.stc" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
-            <button id="btn-stone" class="sidebar-button" title="Gather Stone" data-abbr="g.stn" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
-            <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" data-abbr="g.fbr" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
+            <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" data-abbr="g.Stk" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
+            <button id="btn-stone" class="sidebar-button" title="Gather Stone" data-abbr="g.Stn" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
+            <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" data-abbr="g.Fbr" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
             <button id="btn-coal" class="sidebar-button" title="Mine Coal" data-abbr="m.cl" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
             <div class="sidebar-label" data-abbr="C"><span>Crafting</span></div>
-            <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" data-abbr="c.ph" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
-            <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" data-abbr="c.ah" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
-            <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" data-abbr="c.pck" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
-            <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" data-abbr="c.axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
+            <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" data-abbr="c.PH" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
+            <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" data-abbr="c.AH" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
+            <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" data-abbr="c.Pck" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
+            <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" data-abbr="c.Axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
             <div class="sidebar-label" data-abbr="M"><span>Mining</span></div>
-            <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" data-abbr="m.irn" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
-            <button id="btn-chop" class="sidebar-button" title="Chop Wood" data-abbr="c.wd" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
+            <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" data-abbr="m.Irn" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
+            <button id="btn-chop" class="sidebar-button" title="Chop Wood" data-abbr="c.Wd" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
             <div class="sidebar-label" data-abbr="P"><span>Processing</span></div>
-            <button id="btn-iron" class="sidebar-button" title="Smelt Iron" data-abbr="s.irn" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
+            <button id="btn-iron" class="sidebar-button" title="Smelt Iron" data-abbr="s.Irn" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
         </div>
 
         <div id="main-content">
@@ -48,29 +48,28 @@
             </div>
 
             <div id="game-section" style="position: relative;">
+                <p id="task-status" style="cursor: pointer;" onclick="sendAction('Claim Resources')">Current Task: Idle</p>
+                <hr>
                 <div class="resource-grid">
-                    <span>Coal: <span id="coal-count" class="stat">0</span><span id="coal-plus" class="popup"></span></span>
-                    <span>Stone: <span id="stone-count" class="stat">0</span><span id="stone-plus" class="popup"></span></span>
-                    <span>Sticks: <span id="sticks-count" class="stat">0</span><span id="sticks-plus" class="popup"></span></span>
-                    <span>Flint: <span id="flint-count" class="stat">0</span><span id="flint-plus" class="popup"></span></span>
-                    <span>Gemstones: <span id="gemstones-count" class="stat">0</span><span id="gemstones-plus" class="popup"></span></span>
-                    <span>Fiber: <span id="fiber-count" class="stat">0</span><span id="fiber-plus" class="popup"></span></span>
-                    <span>Pickaxe Head: <span id="pickaxe_head-count" class="stat">0</span><span id="pickaxe_head-plus" class="popup"></span></span>
-                    <span>Iron Ore: <span id="iron_ore-count" class="stat">0</span><span id="iron_ore-plus" class="popup"></span></span>
-                    <span>Iron: <span id="iron-count" class="stat">0</span><span id="iron-plus" class="popup"></span></span>
-                    <span>Pickaxe: <span id="pickaxe-count" class="stat">0</span><span id="pickaxe-plus" class="popup"></span></span>
-                    <span>Wood: <span id="wood-count" class="stat">0</span><span id="wood-plus" class="popup"></span></span>
-                    <span>Axe Head: <span id="axe_head-count" class="stat">0</span><span id="axe_head-plus" class="popup"></span></span>
-                    <span>Axe: <span id="axe-count" class="stat">0</span><span id="axe-plus" class="popup"></span></span>
+                    <span>Coal: <span id="coal-count" class="stat"></span><span id="coal-plus" class="popup"></span></span>
+                    <span>Stone: <span id="stone-count" class="stat"></span><span id="stone-plus" class="popup"></span></span>
+                    <span>Sticks: <span id="sticks-count" class="stat"></span><span id="sticks-plus" class="popup"></span></span>
+                    <span>Flint: <span id="flint-count" class="stat"></span><span id="flint-plus" class="popup"></span></span>
+                    <span>Gemstones: <span id="gemstones-count" class="stat"></span><span id="gemstones-plus" class="popup"></span></span>
+                    <span>Fiber: <span id="fiber-count" class="stat"></span><span id="fiber-plus" class="popup"></span></span>
+                    <span>Pickaxe Head: <span id="pickaxe_head-count" class="stat"></span><span id="pickaxe_head-plus" class="popup"></span></span>
+                    <span>Iron Ore: <span id="iron_ore-count" class="stat"></span><span id="iron_ore-plus" class="popup"></span></span>
+                    <span>Iron: <span id="iron-count" class="stat"></span><span id="iron-plus" class="popup"></span></span>
+                    <span>Pickaxe: <span id="pickaxe-count" class="stat"></span><span id="pickaxe-plus" class="popup"></span></span>
+                    <span>Wood: <span id="wood-count" class="stat"></span><span id="wood-plus" class="popup"></span></span>
+                    <span>Axe Head: <span id="axe_head-count" class="stat"></span><span id="axe_head-plus" class="popup"></span></span>
+                    <span>Axe: <span id="axe-count" class="stat"></span><span id="axe-plus" class="popup"></span></span>
                 </div>
-            <hr>
-            <p id="task-status">Task: Idle</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Sidebar toggle functionality
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const isCollapsed = sidebar.classList.toggle('collapsed');
@@ -80,20 +79,8 @@
         }
 
         function toggleDropdown() {
+            console.log("UI: Toggling User Dropdown");
             document.getElementById('user-dropdown').classList.toggle('show');
-        }
-
-        // Close dropdown when clicking outside
-        window.onclick = function(event) {
-            const target = (event && event.target) ? event.target : null;
-            if (target && typeof target.matches === 'function' && !target.matches('.user-menu') && !target.closest('.user-menu')) {
-                const dropdowns = document.getElementsByClassName("dropdown-content");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    if (dropdowns[i].classList.contains('show')) {
-                        dropdowns[i].classList.remove('show');
-                    }
-                }
-            }
         }
 
         // Restore sidebar state on page load
@@ -108,51 +95,77 @@
     </script>
 
     <script>
-        // --- 1. Global State (Declared first to avoid hoisting/TDZ errors) ---
-        let socket = null;
-        let resources = { 
-            coal: 0, stone: 0, sticks: 0, flint: 0, gemstones: 0, 
-            fiber: 0, pickaxe_head: 0, iron_ore: 0, iron: 0, pickaxe: 0,
-            wood: 0, axe_head: 0, axe: 0
-        };
-        let resourceConfigs = {};
-        let currentTask = null;
-        let username = "Connecting...";
-        let progress = 0;
-        let sessionCount = 0;
-        let lastTime = 0;
-
-        // --- 2. Environment & Auth Initialization ---
-        // Detect if we are running locally or on the production server
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
         const localEnv = window.LOCAL_ENV || {};
         const spUrl = '{{ site.supabase_url }}'.startsWith('{{') ? localEnv.SUPABASE_URL : '{{ site.supabase_url }}';
         const spKey = '{{ site.supabase_anon_key }}'.startsWith('{{') ? localEnv.SUPABASE_ANON_KEY : '{{ site.supabase_anon_key }}';
+        
+        console.log("Auth Init: Checking Config", { hasUrl: !!spUrl, hasKey: !!spKey });
+
+        let socket = null; 
+        let resources = { 
+            coal: null, stone: null, sticks: null, flint: null, gemstones: null, 
+            fiber: null, pickaxe_head: null, iron_ore: null, iron: null, pickaxe: null,
+            wood: null, axe_head: null, axe: null
+        };
+        let resourceConfigs = {};
+        let currentTask = null;
+        let username = "";
+        let progress = 0;
+        let sessionCount = 0;
+        let lastTime = 0;
+
+        if (spUrl && spKey) {
+            initAuth(spUrl, spKey);
+            console.log("Auth Init: Supabase client created.");
+            listenForAuthChanges(
+                (session) => {
+                    console.log("Auth Callback: User is SIGNED IN", session.user.email);
+                    document.getElementById('auth-section').style.display = 'none';
+                    document.getElementById('game-section').style.display = 'block';
+                    document.getElementById('user-menu').style.display = 'block';
+                    document.getElementById('player-name').textContent = "Connecting...";
+                    connectToServer(session.access_token);
+                },
+                () => {
+                    console.log("Auth Callback: User is SIGNED OUT");
+                    document.getElementById('auth-section').style.display = 'block';
+                    document.getElementById('game-section').style.display = 'none';
+                    document.getElementById('user-menu').style.display = 'none';
+                    if (socket) { console.log("Socket: Closing due to sign-out"); socket.close(); }
+                }
+            );
+        }
 
         function connectToServer(token) {
-            if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) return;
+            if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) {
+                console.log("Socket: Connection already active or pending.");
+                return;
+            }
 
             const wsUrl = isLocal ? "ws://localhost:8765" : "wss://game.a7iv.com";
+            console.log("Socket: Attempting connection to", wsUrl);
             socket = new WebSocket(wsUrl);
             
             socket.onopen = function(e) {
+                console.log("Socket: Connection established. Sending authentication token.");
                 e.target.send(JSON.stringify({ action: "authenticate", token: token }));
             };
             
-            // 2. LISTEN FOR THE SERVER TO TELL US WHO WE ARE
             socket.onmessage = function(event) {
                 const data = JSON.parse(event.data);
+                console.log("Socket: Received message", data.action);
                 
                 if (data.action === "auth_success") {
-                    // Update the UI with the official database username
+                    console.log("Socket: Auth Successful for", data.username);
                     username = data.username;
                     resourceConfigs = data.resource_configs;
 
                     // Resume task and calculate progress based on server timestamp
-                    currentTask = data.current_task;
-                    if (currentTask && data.task_start) {
+                    currentTask = data.current_task === "Idle" ? null : data.current_task;
+                    if (currentTask && data.last_claim) {
                         // SQLite uses UTC; adding 'Z' ensures JS treats it as UTC
-                        const startTime = new Date(data.task_start + "Z").getTime();
+                        const startTime = new Date(data.last_claim + "Z").getTime();
                         const elapsed = Date.now() - startTime;
                         const duration = (resourceConfigs[currentTask] || 1) * 1000;
                         sessionCount = Math.floor(elapsed / duration);
@@ -174,71 +187,46 @@
                     resources.axe = data.axe || 0;
                     updateDisplay();
                 } else if (data.action === "resource_update") {
-                    syncResources(data.stats, data.gains);
+                    syncResources(data.stats, data.gains, data.source);
                 }
             };
 
-            socket.onclose = function() { socket = null; };
+            socket.onclose = function() { console.log("Socket: Connection closed."); socket = null; };
         }
 
-        // Start Auth Logic
-        if (spUrl && spKey) {
-            initAuth(spUrl, spKey);
-            listenForAuthChanges(
-                (session) => {
-                    document.getElementById('auth-section').style.display = 'none';
-                    document.getElementById('game-section').style.display = 'block';
-                    document.getElementById('user-menu').style.display = 'block';
-                    username = "Connecting...";
-                    updateDisplay();
-                    connectToServer(session.access_token);
-                },
-                () => {
-                    document.getElementById('auth-section').style.display = 'block';
-                    document.getElementById('game-section').style.display = 'none';
-                    document.getElementById('user-menu').style.display = 'none';
-                    if (socket) socket.close();
-                }
-            );
-        } else {
-            console.error("Auth Error: Missing Supabase Config", { spUrl, spKey });
-            document.getElementById('player-name').textContent = "Config Error";
-        }
-
-        // --- 3. Game Logic Functions ---
-        function syncResources(stats, gains) {
+        function syncResources(stats, gains, source) {
             // Show the "Cash Out" animations (+N)
             for (const [res, amount] of Object.entries(gains)) {
                 if (amount > 0) triggerPopup(res + '-plus', '+' + amount, false);
                 else if (amount < 0) triggerPopup(res + '-plus', amount, true);
             }
-
             resources = stats;
-            // Reset local progress because the server just "cashed out" the previous time
-            progress = 0; 
+            if (source !== 'Claim Resources') {
+                progress = 0; 
+            }
             sessionCount = 0;
             updateDisplay();
         }
 
         function updateDisplay() {
-            document.getElementById('player-name').textContent = username;
-            
-            document.getElementById('coal-count').textContent = Math.floor(resources.coal);
-            document.getElementById('stone-count').textContent = Math.floor(resources.stone);
-            document.getElementById('sticks-count').textContent = Math.floor(resources.sticks);
-            document.getElementById('flint-count').textContent = Math.floor(resources.flint);
-            document.getElementById('gemstones-count').textContent = Math.floor(resources.gemstones);
-            document.getElementById('fiber-count').textContent = Math.floor(resources.fiber);
-            document.getElementById('pickaxe_head-count').textContent = Math.floor(resources.pickaxe_head);
-            document.getElementById('iron_ore-count').textContent = Math.floor(resources.iron_ore);
-            document.getElementById('iron-count').textContent = Math.floor(resources.iron);
-            document.getElementById('pickaxe-count').textContent = Math.floor(resources.pickaxe);
-            document.getElementById('wood-count').textContent = Math.floor(resources.wood);
-            document.getElementById('axe_head-count').textContent = Math.floor(resources.axe_head);
-            document.getElementById('axe-count').textContent = Math.floor(resources.axe);
+            document.getElementById('player-name').textContent = username || "Connecting...";
+            const format = (val) => (val === null) ? "" : Math.floor(val);
+            document.getElementById('coal-count').textContent = format(resources.coal);
+            document.getElementById('stone-count').textContent = format(resources.stone);
+            document.getElementById('sticks-count').textContent = format(resources.sticks);
+            document.getElementById('flint-count').textContent = format(resources.flint);
+            document.getElementById('gemstones-count').textContent = format(resources.gemstones);
+            document.getElementById('fiber-count').textContent = format(resources.fiber);
+            document.getElementById('pickaxe_head-count').textContent = format(resources.pickaxe_head);
+            document.getElementById('iron_ore-count').textContent = format(resources.iron_ore);
+            document.getElementById('iron-count').textContent = format(resources.iron);
+            document.getElementById('pickaxe-count').textContent = format(resources.pickaxe);
+            document.getElementById('wood-count').textContent = format(resources.wood);
+            document.getElementById('axe_head-count').textContent = format(resources.axe_head);
+            document.getElementById('axe-count').textContent = format(resources.axe);
             
             const status = document.getElementById('task-status');
-            status.textContent = currentTask ? `Task: ${currentTask} (+${sessionCount})` : 'Task: Idle';
+            status.textContent = currentTask ? `Current Task: ${currentTask} (+${sessionCount})` : 'Current Task: Idle';
             
             // Handle button highlighting
             const btnMap = {
@@ -340,6 +328,10 @@
 
         function sendAction(resource) {
             if (socket && socket.readyState === WebSocket.OPEN) {
+                if (resource === 'Claim Resources') {
+                    socket.send(JSON.stringify({ action: resource }));
+                    return;
+                }
                 const nextTask = (currentTask === resource) ? null : resource;
                 progress = 0;
                 sessionCount = 0;

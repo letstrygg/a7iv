@@ -48,6 +48,8 @@
             </div>
 
             <div id="game-section" style="position: relative;">
+                <p id="task-status" style="cursor: pointer;" onclick="sendAction('Claim Resources')">Current Task: Idle</p>
+                <hr>
                 <div class="resource-grid">
                     <span>Coal: <span id="coal-count" class="stat"></span><span id="coal-plus" class="popup"></span></span>
                     <span>Stone: <span id="stone-count" class="stat"></span><span id="stone-plus" class="popup"></span></span>
@@ -63,8 +65,6 @@
                     <span>Axe Head: <span id="axe_head-count" class="stat"></span><span id="axe_head-plus" class="popup"></span></span>
                     <span>Axe: <span id="axe-count" class="stat"></span><span id="axe-plus" class="popup"></span></span>
                 </div>
-                <hr>
-                <p id="task-status" style="cursor: pointer;" onclick="sendAction('Claim Resources')">Task: Idle</p>
             </div>
         </div>
     </div>
@@ -226,7 +226,7 @@
             document.getElementById('axe-count').textContent = format(resources.axe);
             
             const status = document.getElementById('task-status');
-            status.textContent = currentTask ? `Task: ${currentTask} (+${sessionCount})` : 'Task: Idle';
+            status.textContent = currentTask ? `Current Task: ${currentTask} (+${sessionCount})` : 'Current Task: Idle';
             
             // Handle button highlighting
             const btnMap = {
