@@ -197,6 +197,9 @@
             if (currentTask) {
                 const seconds = resourceConfigs[currentTask] || 1;
                 const duration = seconds * 1000;
+                const delay = 100; // 0.1s pause at the end
+                const activeDuration = Math.max(0, duration - delay);
+                
                 progress += dt;
 
                 if (progress >= duration) {
@@ -210,7 +213,8 @@
                     }
                 }
                 
-                const p = (progress / duration) * 100;
+                // Visual percentage: fill during activeDuration, hold at 100% during delay
+                const p = Math.min(100, (progress / activeDuration) * 100);
                 const activeId = currentTask === 'Mine Coal' ? 'btn-coal' : 'btn-stone';
                 document.getElementById(activeId).style.setProperty('--p', p + '%');
                 updateDisplay();
