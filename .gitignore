@@ -1,0 +1,7 @@
+.env
+*.db
+local_env.js
+.fiveserver
+.fiveserver.json
+__pycache__/
+.vscode/
