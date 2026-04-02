@@ -3,8 +3,9 @@
 <head>
     <title>Idle Factory Prototype</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/local_env.js"></script>
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
 </head>
 <body>
@@ -96,9 +97,10 @@
 
     <script>
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-        const localEnv = window.LOCAL_ENV || {};
-        const spUrl = '{{ site.supabase_url }}'.startsWith('{{') ? localEnv.SUPABASE_URL : '{{ site.supabase_url }}';
-        const spKey = '{{ site.supabase_anon_key }}'.startsWith('{{') ? localEnv.SUPABASE_ANON_KEY : '{{ site.supabase_anon_key }}';
+        
+        // Pulling keys from the single config file loaded in the <head>
+        const spUrl = window.SUPABASE_URL;
+        const spKey = window.SUPABASE_ANON_KEY;
         
         console.log("Auth Init: Checking Config", { hasUrl: !!spUrl, hasKey: !!spKey });
 
@@ -135,6 +137,9 @@
                     if (socket) { console.log("Socket: Closing due to sign-out"); socket.close(); }
                 }
             );
+        } else {
+            console.error("Auth Init: Supabase configuration is missing. Ensure your web host environment variables are set correctly.");
+            document.getElementById('player-name').textContent = "Config Error";
         }
 
         function connectToServer(token) {
