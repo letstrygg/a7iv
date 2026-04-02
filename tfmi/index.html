@@ -14,6 +14,7 @@
         <div id="user-menu" class="user-menu" onclick="toggleDropdown()">
             <span id="player-name">Connecting...</span> <small>▼</small>
             <div id="user-dropdown" class="dropdown-content">
+                <button onclick="resetPlayer()" style="color: var(--red);">Reset Progress</button>
                 <button onclick="logout()">Logout</button>
             </div>
         </div>
@@ -93,6 +94,15 @@
                 document.getElementById('sidebar-toggle').textContent = '▶';
             }
         })();
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('user-menu');
+            const dropdown = document.getElementById('user-dropdown');
+            if (!menu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
     </script>
 
     <script>
@@ -343,6 +353,17 @@
                 currentTask = nextTask;
                 socket.send(JSON.stringify({ action: nextTask || "Idle" }));
                 updateDisplay();
+            }
+        }
+
+        function resetPlayer() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ action: "Reset Player" }));
+                currentTask = null;
+                progress = 0;
+                sessionCount = 0;
+                updateDisplay();
+                toggleDropdown();
             }
         }
     </script>
