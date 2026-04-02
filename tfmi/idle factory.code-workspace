@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "tfmi",
+			"path": "."
+		},
+		{
+			"name": "code",
+			"path": "../../../tfmi/code"
+		}
+	],
+	"settings": {}
+}
