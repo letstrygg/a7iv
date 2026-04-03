@@ -22,19 +22,23 @@
 
     <div id="game-container">
         <div id="sidebar">
-            <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
+                <button id="settings-toggle" onclick="toggleSettingsMode()" style="padding:5px; margin:0; border:0; background:none; font-size:16px;">⚙️</button>
+            </div>
             <div class="sidebar-label" data-abbr="G"><span>Gathering</span></div>
             <button id="btn-sticks" class="sidebar-button" title="Gather Sticks" data-abbr="g.Stk" onclick="sendAction('Gather Sticks')"><span>Gather Sticks</span></button>
             <button id="btn-stone" class="sidebar-button" title="Gather Stone" data-abbr="g.Stn" onclick="sendAction('Gather Stone')"><span>Gather Stone</span></button>
             <button id="btn-fiber" class="sidebar-button" title="Gather Fiber" data-abbr="g.Fbr" onclick="sendAction('Gather Fiber')"><span>Gather Fiber</span></button>
-            <button id="btn-coal" class="sidebar-button" title="Mine Coal" data-abbr="m.cl" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
+            
             <div class="sidebar-label" data-abbr="C"><span>Crafting</span></div>
-            <button id="btn-pick-head" class="sidebar-button" title="Craft Pickaxe Head" data-abbr="c.PH" onclick="sendAction('Craft Pickaxe Head')"><span>Pickaxe Head</span></button>
             <button id="btn-axe-head" class="sidebar-button" title="Craft Axe Head" data-abbr="c.AH" onclick="sendAction('Craft Axe Head')"><span>Axe Head</span></button>
             <button id="btn-craft-pick" class="sidebar-button" title="Craft Pickaxe" data-abbr="c.Pck" onclick="sendAction('Craft Pickaxe')"><span>Craft Pickaxe</span></button>
             <button id="btn-craft-axe" class="sidebar-button" title="Craft Axe" data-abbr="c.Axe" onclick="sendAction('Craft Axe')"><span>Craft Axe</span></button>
+            
             <div class="sidebar-label" data-abbr="M"><span>Mining</span></div>
-            <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron" data-abbr="m.Irn" onclick="sendAction('Mine Iron')"><span>Mine Iron</span></button>
+            <button id="btn-coal" class="sidebar-button" title="Mine Coal" data-abbr="m.cl" onclick="sendAction('Mine Coal')"><span>Mine Coal</span></button>
+            <button id="btn-iron-ore" class="sidebar-button" title="Mine Iron Ore" data-abbr="m.Irn" onclick="sendAction('Mine Iron Ore')"><span>Mine Iron Ore</span></button>
             <button id="btn-chop" class="sidebar-button" title="Chop Wood" data-abbr="c.Wd" onclick="sendAction('Chop Wood')"><span>Chop Wood</span></button>
             <div class="sidebar-label" data-abbr="P"><span>Processing</span></div>
             <button id="btn-iron" class="sidebar-button" title="Smelt Iron" data-abbr="s.Irn" onclick="sendAction('Smelt Iron')"><span>Smelt Iron</span></button>
@@ -52,21 +56,7 @@
             <div id="game-section" style="position: relative;">
                 <p id="task-status" style="cursor: pointer;" onclick="sendAction('Claim Resources')">Current Task: Idle</p>
                 <hr>
-                <div class="resource-grid">
-                    <span>Coal: <span id="coal-count" class="stat"></span><span id="coal-plus" class="popup"></span></span>
-                    <span>Stone: <span id="stone-count" class="stat"></span><span id="stone-plus" class="popup"></span></span>
-                    <span>Sticks: <span id="sticks-count" class="stat"></span><span id="sticks-plus" class="popup"></span></span>
-                    <span>Flint: <span id="flint-count" class="stat"></span><span id="flint-plus" class="popup"></span></span>
-                    <span>Gemstones: <span id="gemstones-count" class="stat"></span><span id="gemstones-plus" class="popup"></span></span>
-                    <span>Fiber: <span id="fiber-count" class="stat"></span><span id="fiber-plus" class="popup"></span></span>
-                    <span>Pickaxe Head: <span id="pickaxe_head-count" class="stat"></span><span id="pickaxe_head-plus" class="popup"></span></span>
-                    <span>Iron Ore: <span id="iron_ore-count" class="stat"></span><span id="iron_ore-plus" class="popup"></span></span>
-                    <span>Iron: <span id="iron-count" class="stat"></span><span id="iron-plus" class="popup"></span></span>
-                    <span>Pickaxe: <span id="pickaxe-count" class="stat"></span><span id="pickaxe-plus" class="popup"></span></span>
-                    <span>Wood: <span id="wood-count" class="stat"></span><span id="wood-plus" class="popup"></span></span>
-                    <span>Axe Head: <span id="axe_head-count" class="stat"></span><span id="axe_head-plus" class="popup"></span></span>
-                    <span>Axe: <span id="axe-count" class="stat"></span><span id="axe-plus" class="popup"></span></span>
-                </div>
+                <div class="resource-grid" id="resource-display"></div>
             </div>
         </div>
     </div>
@@ -106,6 +96,10 @@
     </script>
 
     <script>
+        function res_key(name) {
+            return name.toLowerCase().replace(/ /g, '_').replace(/[^a-z0-9_]/g, '');
+        }
+
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
         
         // Pulling keys from the single config file loaded in the <head>
@@ -115,13 +109,16 @@
         console.log("Auth Init: Checking Config", { hasUrl: !!spUrl, hasKey: !!spKey });
 
         let socket = null; 
-        let resources = { 
-            coal: null, stone: null, sticks: null, flint: null, gemstones: null, 
-            fiber: null, pickaxe_head: null, iron_ore: null, iron: null, pickaxe: null,
-            wood: null, axe_head: null, axe: null
-        };
+        let resources = {};
+        let unlockedTasks = [];
+        let hiddenTasks = [];
+        let storageAssignments = {};
+        let storageCrate = 0;
+        let isSettingsMode = false;
         let resourceConfigs = {};
         let currentTask = null;
+        let autoStopAt = null;
+        let lastSyncTime = 0;
         let username = "";
         let progress = 0;
         let sessionCount = 0;
@@ -175,34 +172,32 @@
                     console.log("Socket: Auth Successful for", data.username);
                     username = data.username;
                     resourceConfigs = data.resource_configs;
+                    unlockedTasks = data.unlocked_tasks || [];
+                    resources = data.stats;
+                    hiddenTasks = data.hidden_tasks || [];
+                    storageAssignments = data.storage_assignments || {};
+                    storageCrate = data.storage_crate || 0;
 
                     // Resume task and calculate progress based on server timestamp
                     currentTask = data.current_task === "Idle" ? null : data.current_task;
-                    if (currentTask && data.last_claim) {
-                        // SQLite uses UTC; adding 'Z' ensures JS treats it as UTC
-                        const startTime = new Date(data.last_claim + "Z").getTime();
-                        const elapsed = Date.now() - startTime;
-                        const duration = (resourceConfigs[currentTask] || 1) * 1000;
-                        sessionCount = Math.floor(elapsed / duration);
-                        progress = elapsed % duration;
+                    autoStopAt = data.auto_stop_at ? new Date(data.auto_stop_at + "Z").getTime() : null;
+                    if (data.last_claim) {
+                        lastSyncTime = new Date(data.last_claim + "Z").getTime();
                     }
 
-                    resources.coal = data.coal;
-                    resources.stone = data.stone;
-                    resources.sticks = data.sticks || 0;
-                    resources.flint = data.flint || 0;
-                    resources.gemstones = data.gemstones || 0;
-                    resources.fiber = data.fiber || 0;
-                    resources.pickaxe_head = data.pickaxe_head || 0;
-                    resources.iron_ore = data.iron_ore || 0;
-                    resources.iron = data.iron || 0;
-                    resources.pickaxe = data.pickaxe || 0;
-                    resources.wood = data.wood || 0;
-                    resources.axe_head = data.axe_head || 0;
-                    resources.axe = data.axe || 0;
                     updateDisplay();
                 } else if (data.action === "resource_update") {
+                    if (data.unlocked_tasks) unlockedTasks = data.unlocked_tasks;
+                    if (data.hidden_tasks) hiddenTasks = data.hidden_tasks;
+                    currentTask = data.current_task === "Idle" ? null : data.current_task;
+                    autoStopAt = data.auto_stop_at ? new Date(data.auto_stop_at + "Z").getTime() : null;
+                    if (data.last_claim) {
+                        lastSyncTime = new Date(data.last_claim + "Z").getTime();
+                    }
                     syncResources(data.stats, data.gains, data.source);
+                } else if (data.action === "visibility_update") {
+                    hiddenTasks = data.hidden_tasks;
+                    updateDisplay();
                 }
             };
 
@@ -225,39 +220,81 @@
 
         function updateDisplay() {
             document.getElementById('player-name').textContent = username || "Connecting...";
-            const format = (val) => (val === null) ? "" : Math.floor(val);
-            document.getElementById('coal-count').textContent = format(resources.coal);
-            document.getElementById('stone-count').textContent = format(resources.stone);
-            document.getElementById('sticks-count').textContent = format(resources.sticks);
-            document.getElementById('flint-count').textContent = format(resources.flint);
-            document.getElementById('gemstones-count').textContent = format(resources.gemstones);
-            document.getElementById('fiber-count').textContent = format(resources.fiber);
-            document.getElementById('pickaxe_head-count').textContent = format(resources.pickaxe_head);
-            document.getElementById('iron_ore-count').textContent = format(resources.iron_ore);
-            document.getElementById('iron-count').textContent = format(resources.iron);
-            document.getElementById('pickaxe-count').textContent = format(resources.pickaxe);
-            document.getElementById('wood-count').textContent = format(resources.wood);
-            document.getElementById('axe_head-count').textContent = format(resources.axe_head);
-            document.getElementById('axe-count').textContent = format(resources.axe);
+            const grid = document.getElementById('resource-display');
+            
+            const infraKeys = ["player_slug", "current_task", "task_start", "last_claim", "auto_stop_at", "unlocked_tasks", "hidden_tasks", "storage_assignments", "storage_crate", "username", "slug", "email", "picture"];
+
+            for (const [res, val] of Object.entries(resources)) {
+                if (infraKeys.includes(res)) continue;
+
+                const isRevealed = val > 0 || unlockedTasks.some(t => {
+                    const taskRes = resourceConfigs[t]?.resource;
+                    return taskRes && res_key(taskRes) === res;
+                });
+
+                let row = document.getElementById('row-' + res);
+                if (isRevealed) {
+                    if (!row) {
+                        row = document.createElement('span');
+                        row.id = 'row-' + res;
+                        const label = res.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                        row.innerHTML = `${label}: <span id="${res}-count" class="stat"></span><span id="${res}-plus" class="popup"></span>`;
+                        grid.appendChild(row);
+                    }
+                    row.style.display = 'inline-block';
+                    
+                    const el = document.getElementById(res + '-count');
+                    if (el) {
+                        const taskConfig = Object.values(resourceConfigs).find(c => 
+                            c.resource && res_key(c.resource) === res
+                        ) || {limit: 10};
+                        
+                        const crates = storageAssignments[res] || 0;
+                        const cap = (taskConfig.limit || 10) + (crates * 10);
+                        el.textContent = `${Math.floor(val || 0)} / ${cap}`;
+                    }
+                } else if (row) {
+                    row.style.display = 'none';
+                }
+            }
             
             const status = document.getElementById('task-status');
             status.textContent = currentTask ? `Current Task: ${currentTask} (+${sessionCount})` : 'Current Task: Idle';
             
             // Handle button highlighting
             const btnMap = {
-                'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
-                'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-pick-head', 'Craft Pickaxe': 'btn-craft-pick',
-                'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
-                'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
+                'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks', 'Gather Fiber': 'btn-fiber',
+                'Craft Pickaxe': 'btn-craft-pick',
+                'Mine Iron Ore': 'btn-iron-ore', 'Smelt Iron': 'btn-iron', 'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
                 'Chop Wood': 'btn-chop'
             };
             
             Object.entries(btnMap).forEach(([task, id]) => {
                 const btn = document.getElementById(id);
                 if (!btn) return;
+
+                 const isUnlocked = unlockedTasks.includes(task);
+                const isHidden = hiddenTasks.includes(task);
+                
+                if (isSettingsMode) {
+                    btn.style.display = isUnlocked ? 'block' : 'none';
+                    btn.style.opacity = isHidden ? '0.4' : '1';
+                    btn.style.border = isHidden ? '1px dashed var(--red)' : '1px solid var(--blue)';
+                } else {
+                    btn.style.display = (isUnlocked && !isHidden) ? 'block' : 'none';
+                    btn.style.opacity = '1';
+                    btn.style.border = '0px';
+                }
+
                 btn.classList.toggle('active-task', currentTask === task);
                 if (currentTask !== task) btn.style.setProperty('--p', '0%');
             });
+        }
+
+        function toggleSettingsMode() {
+            isSettingsMode = !isSettingsMode;
+            document.getElementById('settings-toggle').style.background = isSettingsMode ? 'var(--hover-bg)' : 'none';
+            updateDisplay();
         }
 
         function triggerPopup(id, text, isLoss) {
@@ -270,66 +307,74 @@
             el.classList.add('animate-plus');
         }
 
-        const consumptionConfigs = {
-            "Smelt Iron": { "coal": 1, "iron_ore": 1 },
-            "Craft Pickaxe Head": { "stone": 10 },
-            "Craft Pickaxe": { "pickaxe_head": 1, "sticks": 1, "fiber": 2 },
-            "Craft Axe Head": { "flint": 2 },
-            "Craft Axe": { "axe_head": 1, "sticks": 1, "fiber": 2 }
-        };
-
-        const requirementConfigs = {
-            "Mine Iron": { "pickaxe": 1 },
-            "Chop Wood": { "axe": 1 }
-        };
-
         function gameLoop(now) {
             if (!lastTime) lastTime = now;
             const dt = now - lastTime;
             lastTime = now;
 
-            if (currentTask) {
-                const seconds = resourceConfigs[currentTask] || 1;
-                const duration = seconds * 1000;
-                const delay = 100; // 0.1s pause at the end
-                const activeDuration = Math.max(0, duration - delay);
-                
-                progress += dt;
+            if (currentTask && lastSyncTime) {
+                const config = resourceConfigs[currentTask];
+                if (!config) return requestAnimationFrame(gameLoop);
 
-                // Check Tool Requirements
-                const reqs = requirementConfigs[currentTask] || {};
-                for (const [res, min] of Object.entries(reqs)) {
-                    if (resources[res] < min) return requestAnimationFrame(gameLoop);
+                const nowTs = Date.now();
+                const duration = (config.duration || 5) * 1000;
+
+                // 1. Check for Auto-Stop
+                // Added 500ms leeway to account for clock drift between client/server
+                if (autoStopAt && nowTs >= (autoStopAt + 500)) {
+                    console.log("UI: Auto-stop reached. Finalizing visual.");
+                    progress = duration; // Force bar to 100%
+                    updateDisplay();
+                    autoStopAt = null; 
+                    sendAction('Claim Resources');
+                    return requestAnimationFrame(gameLoop);
                 }
 
-                // Check if we have resources to continue
-                const inputs = consumptionConfigs[currentTask] || {};
-                for (const [res, req] of Object.entries(inputs)) {
-                    if (resources[res] < req) {
+                // 2. Calculate Clock-Based Progress
+                // Use Math.max to handle cases where the client clock is slightly behind the server
+                const totalElapsed = Math.max(0, nowTs - lastSyncTime);
+                const newSessionCount = Math.floor(totalElapsed / duration);
+                const newProgress = totalElapsed % duration;
+
+                // 3. Trigger local resource popups if cycles passed
+                if (newSessionCount > sessionCount) {
+                    const diff = newSessionCount - sessionCount;
+                    const inputs = config.inputs || {};
+                    for (let i = 0; i < diff; i++) {
+                        for (const [item, req] of Object.entries(inputs)) {
+                            const rk = res_key(item);
+                            resources[rk] -= req;
+                            triggerPopup(rk + '-plus', '-' + req, true);
+                        }
+                    }
+                    sessionCount = newSessionCount;
+                }
+                progress = newProgress;
+
+                // 4. Check Tool Requirements
+                if (config.tool_required) {
+                    const tKey = res_key(config.tool_required);
+                    if ((resources[tKey] || 0) < 1) return requestAnimationFrame(gameLoop);
+                }
+
+                // 5. Check if we have resources to continue
+                const inputs = config.inputs || {};
+                for (const [item, req] of Object.entries(inputs)) {
+                    if ((resources[res_key(item)] || 0) < req) {
                         // Local stop if out of resources
-                        console.log("Out of " + res);
+                        console.log("Out of " + item);
                         return requestAnimationFrame(gameLoop); 
                     }
                 }
 
-                if (progress >= duration) {
-                    progress -= duration;
-                    sessionCount++;
-
-                    // Show red -1 for consumed resources immediately
-                    for (const [res, req] of Object.entries(inputs)) {
-                        resources[res] -= req; // Local consumption
-                        triggerPopup(res + '-plus', '-' + req, true);
-                    }
-                }
-                
                 // Visual percentage: fill during activeDuration, hold at 100% during delay
+                const delay = 100;
+                const activeDuration = Math.max(0, duration - delay);
                 const p = Math.min(100, (progress / activeDuration) * 100);
                 const btnMap = {
                     'Mine Coal': 'btn-coal', 'Gather Stone': 'btn-stone', 'Gather Sticks': 'btn-sticks',
-                    'Gather Fiber': 'btn-fiber', 'Craft Pickaxe Head': 'btn-pick-head', 'Craft Pickaxe': 'btn-craft-pick',
-                    'Mine Iron': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
-                    'Craft Axe Head': 'btn-axe-head', 'Craft Axe': 'btn-craft-axe',
+                    'Gather Fiber': 'btn-fiber', 'Craft Pickaxe': 'btn-craft-pick',
+                    'Mine Iron Ore': 'btn-iron-ore', 'Smelt Iron': 'btn-iron',
                     'Chop Wood': 'btn-chop'
                 };
                 let activeId = btnMap[currentTask] || '';
@@ -342,14 +387,49 @@
         requestAnimationFrame(gameLoop);
 
         function sendAction(resource) {
+            if (isSettingsMode) {
+                socket.send(JSON.stringify({ action: "Toggle Visibility", task: resource }));
+                return;
+            }
             if (socket && socket.readyState === WebSocket.OPEN) {
                 if (resource === 'Claim Resources') {
                     socket.send(JSON.stringify({ action: resource }));
                     return;
                 }
                 const nextTask = (currentTask === resource) ? null : resource;
+
+                // --- Flicker Prevention: Pre-verify task validity locally ---
+                if (nextTask) {
+                    const config = resourceConfigs[nextTask];
+                    if (config) {
+                        const rk = res_key(config.resource);
+                        const crates = storageAssignments[rk] || 0;
+                        const cap = config.limit + (crates * 10);
+                        
+                        // Check Capacity
+                        if ((resources[rk] || 0) >= cap) {
+                            console.log(`UI: ${rk} appears full.`);
+                            socket.send(JSON.stringify({ action: nextTask }));
+                            return; 
+                        }
+
+                        // Check Ingredients & Tool Requirements
+                        const inputs = config.inputs || {};
+                        if (config.tool_required && (resources[res_key(config.tool_required)] || 0) < 1) return;
+                        for (const [item, req] of Object.entries(inputs)) {
+                            if ((resources[res_key(item)] || 0) < req) {
+                                console.log(`UI: Missing ${item}.`);
+                                socket.send(JSON.stringify({ action: nextTask }));
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                // Optimistic update: Only run if the client thinks the task is possible
                 progress = 0;
                 sessionCount = 0;
+                lastSyncTime = Date.now(); // Set to now so animation starts immediately
                 currentTask = nextTask;
                 socket.send(JSON.stringify({ action: nextTask || "Idle" }));
                 updateDisplay();
@@ -360,6 +440,8 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ action: "Reset Player" }));
                 currentTask = null;
+                autoStopAt = null;
+                lastSyncTime = 0;
                 progress = 0;
                 sessionCount = 0;
                 updateDisplay();

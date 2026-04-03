@@ -110,6 +110,7 @@ h2 { font-weight: 300; margin-bottom: 30px; }
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    display: none; /* Hide by default to prevent flicker */
 }
 
 /* --- Resource Grid --- */
@@ -119,6 +120,11 @@ h2 { font-weight: 300; margin-bottom: 30px; }
     gap: 15px;
     margin-bottom: 20px;
     align-items: center;
+}
+
+.resource-grid > span {
+    display: none; /* Hide by default to prevent flicker */
+    position: relative; /* Anchor for the absolute-positioned popups */
 }
 
 #sidebar.collapsed .sidebar-label span,
