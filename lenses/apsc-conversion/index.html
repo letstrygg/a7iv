@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Best Value Wide Angle Lenses - Sony A6XXX</title>
+    <title>APS-C to Full-Frame Lens Conversion Guide</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -29,63 +29,69 @@
             margin-top: 1.5rem;
             color: #444;
         }
-        a.lens-card {
-            display: block;
-            padding: 1rem;
-            margin: 0.75rem 0;
-            background: #fcfcfc;
-            text-decoration: none;
-            color: #0056b3;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            transition: all 0.2s ease;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
         }
-        a.lens-card:hover {
-            background: #f0f7ff;
-            border-color: #bcd9ff;
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
         }
-        .lens-title {
-            font-size: 1.1rem;
+        th {
+            background-color: #f8f9fa;
             font-weight: 600;
+            color: #444;
         }
-        footer {
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #eaeaea;
-            font-size: 0.85rem;
-            color: #666;
-            text-align: center;
-        }
-        footer a {
-            color: #0056b3;
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
+        tr:hover {
+            background-color: #fcfcfc;
         }
     </style>
 </head>
 <body>
 
-    <h1>Best Value Wide Angle Lens Options</h1>
-    <p class="subtitle">For Sony A6XXX series (<a href="/lenses/apsc-conversion/index.html">APS-C</a> sensor)</p>
+    <h1>APS-C to Full-Frame Conversion</h1>
+    <p class="subtitle">Calculated using a 1.5x Crop Factor (Sony/Nikon/Fuji)</p>
 
-    <h2>Prime</h2>
-    <a href="https://amzn.to/4xbH5G8" class="lens-card" target="_blank" rel="noopener noreferrer">
-        <div class="lens-title">SIGMA 16mm f/1.4</div> ~$500
-    </a>
+    <p>When using an APS-C lens on a Full-Frame camera (or comparing the two systems), you must multiply both the focal length and the aperture by 1.5 to find the Full-Frame equivalent in terms of field of view and depth of field.</p>
 
-    <h2>Wide Zooms</h2>
-    <a href="https://amzn.to/4uMfg5H" class="lens-card" target="_blank" rel="noopener noreferrer">
-        <div class="lens-title">SIGMA 10-18mm F2.8</div> ~$700
-    </a>
-    <a href="https://amzn.to/4e56ZTp" class="lens-card" target="_blank" rel="noopener noreferrer">
-        <div class="lens-title">TAMRON 11-20mm f/2.8</div> ~$600
-    </a>
+    <h2>Focal Length Conversion</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>APS-C Focal Length</th>
+                <th>Full-Frame Equivalent</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>10mm</td><td>15mm</td></tr>
+            <tr><td>18mm</td><td>27mm</td></tr>
+            <tr><td>24mm</td><td>36mm</td></tr>
+            <tr><td>35mm</td><td>52.5mm</td></tr>
+            <tr><td>50mm</td><td>75mm</td></tr>
+            <tr><td>85mm</td><td>127.5mm</td></tr>
+            <tr><td>135mm</td><td>202.5mm</td></tr>
+            <tr><td>300mm</td><td>450mm</td></tr>
+        </tbody>
+    </table>
 
-    <footer>
-        As an <a href="https://www.amazon.com/?&linkCode=ll2&tag=letstrygg.com-20&linkId=675320e66b238f584ccfe3c7d717cd28&language=en_US&ref_=as_li_ss_tl">Amazon</a> Associate I earn from qualifying purchases.
-    </footer>
+    <h2>Aperture Conversion (Depth of Field Equivalent)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>APS-C Aperture</th>
+                <th>Full-Frame Equivalent</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>f/1.4</td><td>f/2.1</td></tr>
+            <tr><td>f/1.8</td><td>f/2.7</td></tr>
+            <tr><td>f/2.8</td><td>f/4.2</td></tr>
+            <tr><td>f/4.0</td><td>f/6.0</td></tr>
+            <tr><td>f/5.6</td><td>f/8.4</td></tr>
+        </tbody>
+    </table>
 
 </body>
 </html>
