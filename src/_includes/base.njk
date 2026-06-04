@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} | A7IV</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <header>
+    <nav class="breadcrumb">
+      {% if not breadcrumbs %}
+        <span aria-current="page">A7IV.com</span>
+      {% else %}
+        {% for crumb in breadcrumbs %}
+          {% if loop.last %}
+            <span aria-current="page">{{ crumb.name }}</span>
+          {% else %}
+            <a href="{{ crumb.url }}">{{ crumb.name }}</a> <span class="separator">/</span>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {{ content | safe }}
+  </main>
+
+  <footer>
+    <p><small>As an Amazon Associate I earn from qualifying purchases.</small></p>
+  </footer>
+
+</body>
+</html>

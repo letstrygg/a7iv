@@ -1,0 +1,27 @@
+{
+  "name": "a7iv",
+  "version": "1.0.0",
+  "description": "a7iv ======== Minimal Jekyll site using shared-jekyll-theme.",
+  "main": "index.js",
+  "scripts": {
+    "start": "eleventy --serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/letstrygg/a7iv.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/letstrygg/a7iv/issues"
+  },
+  "homepage": "https://github.com/letstrygg/a7iv#readme",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.5"
+  },
+  "dependencies": {
+    "globby": "^16.2.0"
+  }
+}

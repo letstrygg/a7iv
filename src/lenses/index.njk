@@ -1,0 +1,16 @@
+---
+layout: base.njk
+title: Lenses
+breadcrumbs:
+  - name: A7IV
+    url: /
+  - name: Lenses
+---
+
+<ul>
+  {% for lens in lenses %}
+    <li>
+      <strong>{{ lens.brand }} {{ lens.series }} {{ lens.optics.focal_length.min }}-{{ lens.optics.focal_length.max }}mm f/{{ lens.optics.max_aperture.min_f_number }}</strong>
+    </li>
+  {% endfor %}
+</ul>

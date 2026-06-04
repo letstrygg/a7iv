@@ -1,0 +1,16 @@
+[
+  {
+    "id": "sony-fe-24-70-gm2",
+    "brand": "Sony",
+    "series": "G Master",
+    "version": "II",
+    "mount": "Sony E",
+    "coverage": "Full-Frame",
+    "optics": {
+      "is_zoom": true,
+      "focal_length": { "min": 24, "max": 70 },
+      "max_aperture": { "is_constant": true, "min_f_number": 2.8, "max_f_number": 2.8 }
+    },
+    "pricing": { "msrp_usd": 2299, "avg_used_usd": 1900 }
+  }
+]
