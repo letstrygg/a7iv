@@ -1,3 +1,6 @@
+I stripped the `.tooltip` CSS completely and removed the class from the table header. It now functions as a standard, invisible browser tooltip using only the `title` attribute, with no dotted lines or cursor changes.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,10 +91,6 @@
         li {
             margin-bottom: 0.25rem;
         }
-        .tooltip {
-            cursor: help;
-            border-bottom: 1px dotted #999;
-        }
         footer {
             margin-top: 3rem;
             padding-top: 1.5rem;
@@ -119,7 +118,7 @@
                     <th>Release Date</th>
                     <th>Rough Price (Body)</th>
                     <th>Video Max</th>
-                    <th title="In-Body Image Stabilization" class="tooltip">IBIS<br>(Stabilization)</th>
+                    <th title="In-Body Image Stabilization">IBIS<br>(Stabilization)</th>
                     <th>Battery Type</th>
                 </tr>
             </thead>
